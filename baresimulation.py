@@ -123,9 +123,6 @@ class Users(object):
     correspond to findings reports on online news behavior (mostly Mitchell et
     al 2017,'How Americans encounter, recall and act upon digital news').
 
-    Todo:
-        * Allow export of the data for analysis.
-
     """
 
     def __init__(self):
@@ -290,9 +287,6 @@ class Items(object):
     different recommendation algorithms to be applied on. The default attributes
     correspond to findings reports on online news behavior (mostly Mitchell et
     al 2017,'How Americans encounter, recall and act upon digital news').
-
-    Todo:
-        * Allow export of the data for analysis.
 
     """
     def __init__(self):
@@ -540,7 +534,7 @@ class Simulation():
 
 
     #TODO here the sumulation is run need to find a way to make it iteration-esque
-    def runSimulation(self, progress_callback):
+    def runSimulation(self):
         """ The main simulation function.
 
         For different simulation instantiations to run on the same random order of items
@@ -565,9 +559,14 @@ class Simulation():
                 self.D = ControlD.copy()  # Start from the control distances between items and users
                 self.SalesHistory = ControlHistory.copy()  # Start from the control sale history
                 # self.ControlHistory = ControlHistory.copy()  # We use a copy of th
-                self.iterationRange = [i for i in range(days,days*2)]
+
+
+                self.iterationRange = [i for i in range(days,days*2)] #TODO CHANGE ITERATION RANGE TO DESIRED RANGE
 
             # Start the simulation for the current recommender
+            #TODO in this code block the simulation is defined, it runs until the iteration range, need to convert this code
+            # block to be in line with what we want...
+
             for epoch_index, epoch in enumerate(self.iterationRange):
 
                 SalesHistoryBefore = self.SalesHistory.copy()
@@ -647,8 +646,8 @@ class Simulation():
 
                 # Save results
                 self.printj(self.algorithm+": Exporting iteration data...")
-                self.exportAnalysisDataAfterIteration()
-                progress_callback.emit((epoch_index+1)/len(self.iterationRange))
+                self.exportAnalysisDataAfterIteration() #TODO Important piece while here, after each iteration the data metrics are exported
+
 
                 # After the control period is over, we store its data to be used by the other rec algorithms
                 if self.algorithm == "Control":
@@ -658,6 +657,25 @@ class Simulation():
                     ControlHistory = self.SalesHistory.copy()  # We use a copy of th
 
 
+    #TODO used to export the data we want diversity is included
+    def exportAnalysisDataAfterIteration(self):
+        """ Export data to dataframes
+
+        This is called at the end of each rec algorithm iteration. Certain data
+        can be exported for further analysis e.g. the the SalesHistory. For this
+        version, we simply export the appropriate data for the figures provided
+        by the interface.
+
+        """
+
+
+        # Metrics output
+        df = pd.DataFrame(self.data["Diversity"])
+        df.to_pickle(self.outfolder + "/metrics analysis.pkl")
+
+        # Topics distribution output
+        df = pd.DataFrame(self.data["Distribution"])
+        df.to_pickle(self.outfolder + "/metrics distribution.pkl")
 
 
     # initialize the other classes with the settings
@@ -698,7 +716,7 @@ class Simulation():
         I.topicsProminence = self.settings["Overall topic prominence"]
         I.numberOfNewItemsPI = int(self.settings["Number of published articles per day"])
 
-        I.generatePopulation(totalNumberOfIterationsSimulation) #TODO number of iterations
+        I.generatePopulation(totalNumberOfIterationsSimulation) #TODO number of iterations of simulation
         U.generatePopulation()
 
         self.printj("Create simulation instance...")
@@ -730,4 +748,13 @@ class Simulation():
             for key in ["EPC", "EPCstd",'ILD',"Gini", "EFD", "EPD", "EILD", 'ILDstd', "EFDstd", "EPDstd", "EILDstd"]:
                 diversityMetrics[algorithm].update({key:[]})
         self.data.update({"Diversity": diversityMetrics})
+
+
+# main function
+if __name__ == '__main__':
+    sim = Simulation()
+    sim.initWithSettings()
+    sim.runSimulation()
+
+    #todo make an exit condition
 
