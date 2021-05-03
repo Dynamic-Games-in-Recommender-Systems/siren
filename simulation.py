@@ -22,7 +22,6 @@ from scipy.stats import chi2
 import random
 import pandas as pd
 import pickle
-from sklearn.datasets.samples_generator import make_blobs
 from sklearn.mixture import GaussianMixture
 import os
 import sys, getopt
@@ -1154,7 +1153,7 @@ class SimulationGUI(QDialog):
 		#sim.gallery = gallery 
 		self.outfolder = self.settings["outfolder"]
 		self.seed = int(self.settings["seed"])
-		self.n = int(self.settings["Number of recommended articles per day"])
+		self.n = int(self.settings["Number of recommended articles per day"]) #todo change when not used
 		self.algorithms = ['Control'] + self.settings["Recommender algorithms"]
 			
 		# The totalNumberOfIterations controls the amount of
