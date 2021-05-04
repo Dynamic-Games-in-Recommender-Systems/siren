@@ -515,7 +515,7 @@ class Simulation():
         self.settings = {}
 
     #TODO change(set) the settings
-    def settings(self):
+    def setSettings(self):
         self.settings = {"Number of active users per day": self.spinBoxUsers.value(),       # Population
                          "Days" : self.spinBoxDays.value(),                                 # Number of iterations
                          "seed": int(1),
@@ -753,6 +753,7 @@ class Simulation():
 # main function
 if __name__ == '__main__':
     sim = Simulation()
+    sim.setSettings()
     sim.initWithSettings()
     sim.runSimulation()
 
