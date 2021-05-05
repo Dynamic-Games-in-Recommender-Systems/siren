@@ -516,18 +516,31 @@ class Simulation():
 
     #TODO change(set) the settings
     def setSettings(self):
-        self.settings = {"Number of active users per day": self.spinBoxUsers.value(),       # Population
-                         "Days" : self.spinBoxDays.value(),                                 # Number of iterations
+        # self.settings = {"Number of active users per day": self.spinBoxUsers.value(),       # Population
+        #                  "Days" : self.spinBoxDays.value(),                                 # Number of iterations
+        #                  "seed": int(1),
+        #                  "Recommender salience": self.spinBoxSalience.value(),
+        #                  "Number of published articles per day": self.spinBoxPubArticles.value(),
+        #                  "outfolder": "output-"+str(time.time()),
+        #                  "Number of recommended articles per day": self.spinBoxRecArticles.value(),
+        #                  "Average read articles per day": self.spinBoxUsersArticles.value(),
+        #                  "Reading focus": float(self.sliderFocus.value()/100),
+        #                  "Recommender algorithms": [str(item.text()) for item in self.comboBoxAlgorithms.selectedItems()],
+        #                  "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
+        #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
+
+        self.settings = {"Number of active users per day": 1,       # Population
+                         "Days" : 3,                                 # Number of iterations
                          "seed": int(1),
-                         "Recommender salience": self.spinBoxSalience.value(),
-                         "Number of published articles per day": self.spinBoxPubArticles.value(),
+                         "Recommender salience": 5,
+                         "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": self.spinBoxRecArticles.value(),
-                         "Average read articles per day": self.spinBoxUsersArticles.value(),
-                         "Reading focus": float(self.sliderFocus.value()/100),
-                         "Recommender algorithms": [str(item.text()) for item in self.comboBoxAlgorithms.selectedItems()],
-                         "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
-                         "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
+                         "Number of recommended articles per day": 5,
+                         "Average read articles per day": 6,
+                         "Reading focus": 0.6,
+                         "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
+                         "Overall topic weights": [float(i/100) for i in [20,  20, 20, 20, 20]], #weights for the topics
+                         "Overall topic prominence": [float(i/10) for i in [60,  60, 60, 60, 60]]} # porminence for the topics
 
         # Make outfolder
         os.makedirs(self.settings["outfolder"])
@@ -749,6 +762,59 @@ class Simulation():
                 diversityMetrics[algorithm].update({key:[]})
         self.data.update({"Diversity": diversityMetrics})
 
+    def printj(self, text):
+        """template method to replace the printing from the siren simulation until a better solution is found"""
+        print(text)
+
+    def awarenessModule(self, epoch):
+        """This function computes the awareness of each user.
+
+        While the proximity/prominence awareness is computed in the user class, the current function
+        updates that awareness to accommodate for the non-available items and those that the user
+        has purchased before. The number of items in the awareness is also limited.
+
+        Args:
+        	epoch (int): The current iteration.
+
+        """
+
+        self.U.subsetOfAvailableUsers()
+        self.I.subsetOfAvailableItems(epoch)
+        self.U.computeAwarenessMatrix(self.D, self.I.ItemProminence, self.I.activeItemIndeces)
+
+        # Adjust for availability
+        self.U.Awareness[:,self.I.nonActiveItemIndeces] = 0
+
+        # Adjust for purchase history
+        self.U.Awareness = self.U.Awareness - self.SalesHistory>0
+
+        # Adjust for maximum number of items in awareness
+        for a in range(self.U.totalNumberOfUsers):
+            w = np.where(self.U.Awareness[a,:]==1)[0]
+            if len(w)>self.U.w:
+                windex = w.tolist()
+                random.shuffle(windex)
+                self.U.Awareness[a,:] = np.zeros(self.I.totalNumberOfItems)
+                self.U.Awareness[a,windex[:self.U.w]] = 1
+
+    def temporalAdaptationsModule(self, epoch):
+        """ Update the user-items distances and item- lifespand and prominence.
+
+        Todo:
+            * Updating the item-distance only for items that matter
+
+        """
+
+        self.I.updateLifespanAndProminence()
+
+        # We compute this here so that we update the distances between users and not all the items
+        self.I.subsetOfAvailableItems(epoch+1)
+
+
+        if self.algorithm is not "Control":
+            D =  euclideanDistance(self.U.Users, self.I.Items[self.I.activeItemIndeces])
+            # If you use only a percentage of users then adjust this function
+            for u in range(self.U.totalNumberOfUsers): self.D[u,self.I.activeItemIndeces] = D[u,:]
 
 # main function
 if __name__ == '__main__':
