@@ -501,13 +501,19 @@ class Recommendations(object):
         f = open( self.outfolder + "/output.txt","r").read()
         f = f.split("\n")
         recommendations = {}
+        probabilities = {}
+
         for line in f[:-1]:
             l = line.split("\t")
             user_id = int(l[0])
             l1 = l[1].replace("[","").replace("]","").split(",")
             rec = [int(i.split(":")[0]) for i in l1]
+            prob = [float(i.split(":")[1]) for i in l1]
+            probabilities.update(({user_id:prob}))
             recommendations.update({user_id:rec})
-        return recommendations
+
+
+        return recommendations, probabilities
 
 class Simulation():
 
@@ -529,13 +535,13 @@ class Simulation():
         #                  "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
         #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
 
-        self.settings = {"Number of active users per day": 2,       # Population
+        self.settings = {"Number of active users per day": 20,       # Population
                          "Days" : 3,                                 # Number of iterations
                          "seed": int(1),
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": 5,
+                         "Number of recommended articles per day": 10, #change this to set the desired amount of predicted articles
                          "Average read articles per day": 6,
                          "Reading focus": 0.6,
                          "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
@@ -595,7 +601,9 @@ class Simulation():
                     # Call the recommendation object
                     self.Rec.setData(self.U, self.I, self.algorithm, self.SalesHistory)
                     self.Rec.exportToMMLdocuments()
-                    recommendations = self.Rec.mmlRecommendation()
+                    recommendations, probabilities = self.Rec.mmlRecommendation()
+
+                    print(probabilities)   #TODO added the probabilty component here
 
                     # Add recommendations to each user's awareness pool
                     for user in self.U.activeUserIndeces:

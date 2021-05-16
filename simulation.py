@@ -499,8 +499,8 @@ class Recommendations(object):
 
 		command = "mono MyMediaLite/item_recommendation.exe --training-file=" + self.outfolder + "/positive_only_feedback.csv --item-attributes=" + self.outfolder + "/items_attributes.csv --recommender="+self.algorithm+" --predict-items-number="+str(self.n)+" --prediction-file=" + self.outfolder + "/output.txt --user-attributes=" + self.outfolder + "/users_attributes.csv" # --random-seed="+str(int(self.seed*random.random()))
 		os.system(command)
-		
-		# Parse output
+
+	# Parse output
 		f = open( self.outfolder + "/output.txt","r").read() 
 		f = f.split("\n")
 		recommendations = {}
