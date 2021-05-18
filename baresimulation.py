@@ -14,6 +14,7 @@ Example:
 """
 
 from __future__ import division
+from games.basic_ import Basic_game
 import numpy as np
 from scipy import spatial
 from scipy import stats
@@ -51,6 +52,8 @@ else:
     from matplotlib.backends.backend_qt4agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+
+from games import *
 
 
 totalNumberOfIterationsSimulation = 1
@@ -439,7 +442,7 @@ class Items(object):
 
 class Recommendations(object):
     def __init__(self):
-        self.outfolder = ""
+        self.outfolder = "output"
         self.SalesHistory = []
         self.U = []
         self.I = []
@@ -535,18 +538,18 @@ class Simulation():
         #                  "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
         #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
 
-        self.settings = {"Number of active users per day": 20,       # Population
-                         "Days" : 3,                                 # Number of iterations
-                         "seed": int(1),
+        self.settings = {"Number of active users per day": 3,           # Population
+                         "Days" : 3,                                    # Number of iterations
+                         "seed": int(1),                                #
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": 10, #change this to set the desired amount of predicted articles
+                         "Number of recommended articles per day": 10,  #change this to set the desired amount of predicted articles
                          "Average read articles per day": 6,
                          "Reading focus": 0.6,
                          "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
-                         "Overall topic weights": [float(i/100) for i in [20,  20, 20, 20, 20]], #weights for the topics
-                         "Overall topic prominence": [float(i/10) for i in [60,  60, 60, 60, 60]]} # porminence for the topics
+                         "Overall topic weights": [float(i/100) for i in [20,  20, 20, 20, 20]],
+                         "Overall topic prominence": [float(i/10) for i in [60,  60, 60, 60, 60]]}
 
         # Make outfolder
         os.makedirs(self.settings["outfolder"])
@@ -563,6 +566,8 @@ class Simulation():
             iterationRange (list): The iteration range for the current simulation
 
         """
+
+        game = Basic_game(self.settings["Number of recommended articles per day"])
 
         # For all recommenders (starting with the "Control")
         for self.algorithm in self.algorithms:
@@ -603,9 +608,9 @@ class Simulation():
                     self.Rec.exportToMMLdocuments()
                     recommendations, probabilities = self.Rec.mmlRecommendation()
 
-                    print(probabilities)   #TODO added the probabilty component here
+                    recommendations = game.play(self.I, self.U, probabilities)
 
-                    # Add recommendations to each user's awareness pool
+                    # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics
                     for user in self.U.activeUserIndeces:
                         Rec=np.array([-1])
 
@@ -614,7 +619,7 @@ class Simulation():
                                 self.printj(" -- Nothing to recommend -- to user ",user)
                                 continue
                             Rec = recommendations[user]
-                            self.I.hasBeenRecommended[Rec] = 1
+                            self.I.hasBeenRecommended[Rec] = 1 # TODO we might want to change that to only account for really recommended items (i.e. output of the game, not the RS)
                             self.U.Awareness[user, Rec] = 1
 
                             # If recommended but previously purchased, minimize the awareness
