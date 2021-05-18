@@ -489,7 +489,7 @@ class Recommendations(object):
             for f in feat: d.append([int(i),int(f)])
         np.savetxt(self.outfolder + "/items_attributes.csv", np.array(d), delimiter=",", fmt='%d')
 
-    def mmlRecommendation(self):
+    def mmlRecommendation(self, number_of_recommendations):
         """ A wrapper around the MyMediaLite toolbox
 
         Returns:
@@ -497,7 +497,7 @@ class Recommendations(object):
 
         """
 
-        command = "mono MyMediaLite/item_recommendation.exe --training-file=" + self.outfolder + "/positive_only_feedback.csv --item-attributes=" + self.outfolder + "/items_attributes.csv --recommender="+self.algorithm+" --predict-items-number="+str(self.n)+" --prediction-file=" + self.outfolder + "/output.txt --user-attributes=" + self.outfolder + "/users_attributes.csv" # --random-seed="+str(int(self.seed*random.random()))
+        command = "mono MyMediaLite/item_recommendation.exe --training-file=" + self.outfolder + "/positive_only_feedback.csv --item-attributes=" + self.outfolder + "/items_attributes.csv --recommender="+self.algorithm+" --predict-items-number="+str(number_of_recommendations)+" --prediction-file=" + self.outfolder + "/output.txt --user-attributes=" + self.outfolder + "/users_attributes.csv" # --random-seed="+str(int(self.seed*random.random()))
         os.system(command)
 
         # Parse output
@@ -606,9 +606,9 @@ class Simulation():
                     # Call the recommendation object
                     self.Rec.setData(self.U, self.I, self.algorithm, self.SalesHistory)
                     self.Rec.exportToMMLdocuments()
-                    recommendations, probabilities = self.Rec.mmlRecommendation()
+                    recommendations, recommendation_probabilities = self.Rec.mmlRecommendation(len(self.I.activeItemIndeces))
 
-                    recommendations = game.play(self.I, self.U, probabilities)
+                    recommendations = game.play(self.I, self.U, recommendations, recommendation_probabilities)
 
                     # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics
                     for user in self.U.activeUserIndeces:

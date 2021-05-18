@@ -3,6 +3,9 @@ class Reexposition_game:
         self.number_of_recommendations = number_of_recommendations
         pass
 
-    def play(self, items, users, recommendation_strengh):
-        new_recommendations = recommendation_strengh
+    def play(self, items, users, recommendations, recommendation_strenghs):
+        new_recommendations = {}
+        for i in range(len(recommendations)):
+            user_recommendations = np.array([recommendations[i], recommendation_strenghs[i]])
+
         return new_recommendations
