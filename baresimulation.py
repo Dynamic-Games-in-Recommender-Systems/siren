@@ -15,6 +15,7 @@ Example:
 
 from __future__ import division
 from games.basic_ import Basic_game
+from games.reexposition import Reexposition_game
 import numpy as np
 from scipy import spatial
 from scipy import stats
@@ -52,8 +53,6 @@ else:
     from matplotlib.backends.backend_qt4agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
-
-from games import *
 
 
 totalNumberOfIterationsSimulation = 1
@@ -567,7 +566,8 @@ class Simulation():
 
         """
 
-        game = Basic_game(self.settings["Number of recommended articles per day"])
+        # game = Basic_game(self.settings["Number of recommended articles per day"])
+        game = Reexposition_game(self.settings["Number of recommended articles per day"])
 
         # For all recommenders (starting with the "Control")
         for self.algorithm in self.algorithms:
