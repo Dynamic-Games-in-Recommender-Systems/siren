@@ -7,32 +7,36 @@ class Reexposition_game:
         self.number_of_recommendations = number_of_recommendations
         pass
 
-    def play(self, items, users, recommendations, recommendation_strenghs, SalesHistory, controlId):
-        new_recommendations = {}
-        exposures = []
-        SalesHistory1 =  SalesHistory.copy()
-
+    def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId):
+        new_recommendations     = {}
+        exposures               = []
         for user in range(len(users.activeUserIndeces)):
             exposure = np.zeros(len(recommendation_strenghs[user]))
-            exposure[0] = 1.2
-            exposure[1] = 1.1
-            exposure[2] = 1.1
-            exposure[3] = 1.01
-            exposure[4] = 1.01
+            exposure[0] = 1.05
+            exposure[1] = 1.05
+            exposure[2] = 1.05
+            exposure[3] = 1.05
+            exposure[4] = 1.05
+            exposure[5] = 1.05
+            exposure[6] = 1.05
+            exposure[7] = 1.05
+            exposure[8] = 1.2
+            exposure[9] = 1.2
+            exposure[10] = 1.2
+            exposure[11] = 1.2
+            exposure[12] = 1.8
             exposures.append(exposure)
 
-        #optimized_exposure = optimize_exposure(exposure, user_recommendations)
+        optimized_exposure = self.optimize_exposure(items, users, controlId, SalesHistory, exposure, recommendations, 6, self.number_of_recommendations, 20 )
 
         # apply exposure
         #temp = [list(recommendation_strenghs[key]) for key in recommendation_strenghs]
         #old_probabilities = np.array(temp)
 
+
         #updates_probabilities = np.dot(exposure.T, old_probabilities)
 
-        updated_probabilities = {}
-        for u in range(len(users.activeUserIndeces)):
-            probability_update = exposures[u] * np.array(recommendation_strenghs[u])
-            updated_probabilities[u] = probability_update
+        updated_probabilities = self.update_probabilities(users.activeUserIndeces, optimized_exposure, recommendations)
 
         # normalize?
 
@@ -57,49 +61,9 @@ class Reexposition_game:
                                            -> search space might be reduced if we search more intensively along some kind of pareto line reconciling these three variables.
             '''
 
+            return new_recommendations
 
-            # sorted_user_recommendations = user_recommendations[user_recommendations[:,1].argsort()]
-
-            # filtered_user_recommendations = sorted_user_recommendations[1, 0:self.number_of_recommendations]
-
-            # new_recommendations[i] = [int(i) for i in filtered_user_recommendations.tolist()]
-
-
-        for user in users.activeUserIndeces:
-            Rec=np.array([-1])
-
-            if user not in new_recommendations.keys():
-                self.printj(" -- Nothing to recommend -- to user ",user)
-                continue
-            Rec = new_recommendations[user]
-            items.hasBeenRecommended[Rec] = 1 # TODO we might want to change that to only account for really recommended items (i.e. output of the game, not the RS)
-            users.Awareness[user, Rec] = 1
-
-                # If recommended but previously purchased, minimize the awareness
-            users.Awareness[user, np.where(SalesHistory[user,Rec]>0)[0] ] = 0
-
-        for user in users.activeUserIndeces:
-            Rec=np.array([-1])
-
-
-            if user not in recommendations.keys():
-                self.printj(" -- Nothing to recommend -- to user ",user)
-                continue
-            Rec = recommendations[user]
-
-            indecesOfChosenItems,indecesOfChosenItemsW =  users.choiceModule(new_recommendations,
-                                                                              users.Awareness[user,:],
-                                                                              controlId[user,:],
-                                                                              users.sessionSize(),)
-            SalesHistory[user, indecesOfChosenItems] += 1
-        print("SalesHistory before" ,SalesHistory1)
-        print("SalesHistory After" ,SalesHistory)
-        met = metrics.metrics(SalesHistory1, recommendations, items.ItemsFeatures, items.ItemsDistances, SalesHistory)
-        print(met)
-
-
-        return new_recommendations
-    def optimize_exposure(self, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations):
+    def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations):
         # initialize population
         particles               = []
         best_for_particles      = []
@@ -112,41 +76,77 @@ class Reexposition_game:
         b                       = 2
         c                       = 2
 
+        for i in range(n_particles):
 
-
-        for i in range(len(n_particles)):
             particle = np.random.randint(number_of_recommendations, size = len(exposure_set) * len(user_recommendations))
+            print(particle)
             self.legalize_position(particle, len(exposure_set), number_of_recommendations)
             best_neighbour = particle
+            best_score     = 0
             initial_velocity = np.random.randint(2, size = len(exposure_set) * len(user_recommendations)) - 1
             velocities             .append(initial_velocity)
             particles              .append(particle)
             best_for_particles     .append(particle)
             best_score_per_particle.append(0)
 
-        # iterate for each generation
 
+        # iterate for each generation
         for g in range(number_of_generations):
-            for p in len(particles):
+            for p in range(len(particles)):
 
                 # define movement
                 v_inert = a * velocities[p]
-                v_previous_best = 2 * (best_for_particles[p] - particle[p]) * random.random()
-                v_neighbouring_best = 2 * (best_neighbour - [particle[p]]) * random.random()
+                v_previous_best = b * (best_for_particles[p] - particle[p]) * random.random()
+                v_neighbouring_best = c * (best_neighbour - [particle[p]]) * random.random()
                 new_position = particle[p] + (v_inert + v_previous_best + v_neighbouring_best)
-
+                print(new_position)
                 # check for illegal positions
-                particle[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
+                #particle[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
+
+                # formulate pi from particle position:
+                exposure_parameters = []
+                for user_id in range(len(user_recommendations)):
+                    user_exposure = np.zeros(len(user_recommendations[user_id]))
+
+                    for exposure_index in range(len(exposure_set)):
+                        user_exposure[round(particle[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
+
+                    exposure_parameters.append(user_exposure)
+
+                # update recommendation strengths based on particle position
+                updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, user_recommendations)
+                new_recommendations = {}
+                for i in range(len(user_recommendations)):
+
+                    recommendations = np.array([user_recommendations[i], updated_probabilities[i]])
+
+                    sorted_user_recommendations = recommendations[recommendations[:,1].argsort()]
+
+                    filtered_user_recommendations = sorted_user_recommendations[1, 0:self.number_of_recommendations]
+                    new_recommendations[i] = [int(i) for i in filtered_user_recommendations.tolist()]
 
                 # evaluate position
+                value = self.evaluate(users, items, sales_history, new_recommendations, controlId)
 
-                #(needs discretization to the items as well)
+                # TODO we also really need to make sure that we refer to the correct items with the indeces we get!
 
-                # we also really need to make sure that we refer to the correct items with the indeces we get!
+                # after evaluation, update the best positions and the best neighbour value
+                if value > best_score_per_particle[p]:
+                    best_score_per_particle[p] = value
+                    if value > best_score:
+                        best_score = value
 
-                #after evaluation, update the best positions and the best neighbour value
+        # formulate pi from particle position:
+        exposure_parameters = []
+        for user_id in range(len(user_recommendations)):
+            user_exposure = np.zeros(len(user_recommendations[user_id]))
 
-        return #TODO after the last generation, the best neighbouring particle should correspond to the best solution we found
+            for exposure_index in range(len(exposure_set)):
+                user_exposure[round(particle[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
+
+            exposure_parameters.append(user_exposure)
+
+        return exposure_parameters
 
     def legalize_position(self, particle, parameters_per_user, max_value):
         for i in range(len(particle)):
@@ -154,7 +154,7 @@ class Reexposition_game:
                 continue
             else:
                 left = False
-                if random.rand() > 0.5:
+                if random.random() > 0.5:
                     left = True
 
                 illegal = self.check_illegality(parameters_per_user, particle, i)
@@ -177,11 +177,105 @@ class Reexposition_game:
                 is_illegal = True
 
         return is_illegal
-"""
-                 |i1|i2|i3|i4|i5|i6|
-            0.2u1  x
-            0.1u1     x
-            0.1u1        x
-            0.2u2  x
-            0.1u2           x
-"""
+
+    def evaluate(self, users, items, sales_history, user_recommendations, controlId):
+        # calculate awareness#
+        """ # potentially simplified awareness
+
+        for user in users.activeUserIndeces:
+            exposed_items = user_recommendations[user]
+
+            awareness = users.Awareness.copy()
+            users.Awareness[user, exposed_items] = 1
+            users.Awareness[user, np.where(sales_history[user,exposed_items]>0)[0] ] = 0 # If recommended but previously purchased, minimize the awareness
+
+
+
+
+            indecesOfChosenItems,indecesOfChosenItemsW =  self.U.choiceModule(Rec,
+                                                                    self.U.Awareness[user,:], # need to set to one for all selected items
+                                                                    self.D[user,:], # the heck is that?
+                                                                    self.U.sessionSize(), #this should just be the number of selected items
+                                                                    control = self.algorithm=="Control") # we skip this
+        """
+
+        ### from the metrics
+        sales_history_old = sales_history.copy()
+        for user in users.activeUserIndeces:
+            Rec=np.array([-1])
+
+            if user not in user_recommendations.keys():
+                self.printj(" -- Nothing to recommend -- to user ",user)
+                continue
+            Rec = user_recommendations[user]
+            items.hasBeenRecommended[Rec] = 1
+            users.Awareness[user, Rec] = 1
+
+                # If recommended but previously purchased, minimize the awareness
+            users.Awareness[user, np.where(sales_history[user,Rec]>0)[0] ] = 0
+
+        for user in users.activeUserIndeces:
+            Rec=np.array([-1])
+
+
+            if user not in user_recommendations.keys():
+                self.printj(" -- Nothing to recommend -- to user ",user)
+                continue
+            Rec = user_recommendations[user]
+
+            indecesOfChosenItems,indecesOfChosenItemsW =  users.choiceModule(Rec,
+                                                                            users.Awareness[user,:],
+                                                                            controlId[user,:],
+                                                                            users.sessionSize(),)
+            sales_history[user, indecesOfChosenItems] += 1
+
+        metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history)
+        print(metric)
+        return metric
+
+
+    def update_probabilities(self, activeUserIndeces, optimized_exposure, recommendation_strenghs):
+        updated_probabilities = {}
+        for u in range(len(activeUserIndeces)):
+            probability_update = optimized_exposure[u] * np.array(recommendation_strenghs[u])
+            updated_probabilities[u] = probability_update
+        return updated_probabilities
+
+        """
+        Similarity = -self.k*np.log(distanceToItems)
+        V = Similarity.copy()
+
+        if not control:
+            # exponential ranking discount, from Vargas
+            for k, r in enumerate(Rec):
+                V[r] = Similarity[r] + self.delta*np.power(self.beta,k)
+
+        # Introduce the stochastic component
+        E = -np.log(-np.log([random.random() for v in range(len(V))]))
+        U = V + E
+        sel = np.where(w==1)[0]
+
+        # with stochastic
+        selected = np.argsort(U[sel])[::-1]
+
+        # without stochastic
+        selectedW = np.argsort(V[sel])[::-1]
+        return sel[selected[:sessionSize]],sel[selectedW[:sessionSize]]
+        """
+
+
+        """for user in self.U.activeUserIndeces:
+                        Rec = recommendations[user]
+
+                    indecesOfChosenItems,indecesOfChosenItemsW =  self.U.choiceModule(Rec,
+                                                                                      self.U.Awareness[user,:],
+                                                                                      self.D[user,:],
+                                                                                      self.U.sessionSize(),
+                                                                                      control = self.algorithm=="Control")
+
+                    # Add item purchase to histories
+                    self.SalesHistory[user, indecesOfChosenItems] += 1
+
+                    # Compute new user position
+                    if self.algorithm is not "Control" and len(indecesOfChosenItems)>0:
+                        self.U.computeNewPositionOfUser(user, self.I.Items[indecesOfChosenItems])"""
