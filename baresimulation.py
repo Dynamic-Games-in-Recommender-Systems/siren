@@ -607,7 +607,7 @@ class Simulation():
                     self.Rec.setData(self.U, self.I, self.algorithm, self.SalesHistory)
                     self.Rec.exportToMMLdocuments()
                     recommendations, recommendation_probabilities = self.Rec.mmlRecommendation(len(self.I.activeItemIndeces))
-					#Calculate new recommendations
+                    #Calculate new recommendations
                     recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D)
 
                     # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics

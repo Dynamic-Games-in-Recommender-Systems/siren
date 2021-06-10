@@ -10,24 +10,40 @@ class Reexposition_game:
     def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId):
         new_recommendations     = {}
         exposures               = []
+        exposure_factors        = [1.8,
+                                   1.2,
+                                   1.2,
+                                   1.2,
+                                   1.2,
+                                   1.05,
+                                   1.05,
+                                   1.05,
+                                   1.05,
+                                   1.05,
+                                   1.05,
+                                   1.05,
+                                   1.05]
+
         for user in range(len(users.activeUserIndeces)):
             exposure = np.zeros(len(recommendation_strenghs[user]))
-            exposure[0] = 1.05
-            exposure[1] = 1.05
-            exposure[2] = 1.05
-            exposure[3] = 1.05
-            exposure[4] = 1.05
-            exposure[5] = 1.05
-            exposure[6] = 1.05
-            exposure[7] = 1.05
-            exposure[8] = 1.2
-            exposure[9] = 1.2
-            exposure[10] = 1.2
-            exposure[11] = 1.2
-            exposure[12] = 1.8
+            for exposure_factor in range(len(exposure_factors)):
+                exposure[exposure_factor] = exposure_factors[exposure_factor]
+            # exposure[0] = 1.05
+            # exposure[1] = 1.05
+            # exposure[2] = 1.05
+            # exposure[3] = 1.05
+            # exposure[4] = 1.05
+            # exposure[5] = 1.05
+            # exposure[6] = 1.05
+            # exposure[7] = 1.05
+            # exposure[8] = 1.2
+            # exposure[9] = 1.2
+            # exposure[10] = 1.2
+            # exposure[11] = 1.2
+            # exposure[12] = 1.8
             exposures.append(exposure)
 
-        optimized_exposure = self.optimize_exposure(items, users, controlId, SalesHistory, exposure, recommendations, 6, self.number_of_recommendations, 20 )
+        optimized_exposure = self.optimize_exposure(items, users, controlId, SalesHistory, exposure_factors, recommendations, 8, self.number_of_recommendations, 20 )
 
         # apply exposure
         #temp = [list(recommendation_strenghs[key]) for key in recommendation_strenghs]
@@ -101,7 +117,7 @@ class Reexposition_game:
                 new_position = particle[p] + (v_inert + v_previous_best + v_neighbouring_best)
                 print(new_position)
                 # check for illegal positions
-                #particle[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
+                particle[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
 
                 # formulate pi from particle position:
                 exposure_parameters = []
@@ -169,13 +185,14 @@ class Reexposition_game:
                     if particle[i] >= max_value + 0.5:
                         left = True
                     illegal = self.check_illegality(parameters_per_user, particle, i)
+        return particle
 
     def check_illegality(self, parameters_per_user, particle, current_index):
         is_illegal = False
-        for k in range(parameters_per_user - current_index%parameters_per_user, 0, -1):
+        for k in range(current_index%parameters_per_user, 0, -1):
             if round(particle[current_index]) == round(particle[current_index - k]):
                 is_illegal = True
-
+                return is_illegal
         return is_illegal
 
     def evaluate(self, users, items, sales_history, user_recommendations, controlId):
@@ -240,42 +257,3 @@ class Reexposition_game:
             probability_update = optimized_exposure[u] * np.array(recommendation_strenghs[u])
             updated_probabilities[u] = probability_update
         return updated_probabilities
-
-        """
-        Similarity = -self.k*np.log(distanceToItems)
-        V = Similarity.copy()
-
-        if not control:
-            # exponential ranking discount, from Vargas
-            for k, r in enumerate(Rec):
-                V[r] = Similarity[r] + self.delta*np.power(self.beta,k)
-
-        # Introduce the stochastic component
-        E = -np.log(-np.log([random.random() for v in range(len(V))]))
-        U = V + E
-        sel = np.where(w==1)[0]
-
-        # with stochastic
-        selected = np.argsort(U[sel])[::-1]
-
-        # without stochastic
-        selectedW = np.argsort(V[sel])[::-1]
-        return sel[selected[:sessionSize]],sel[selectedW[:sessionSize]]
-        """
-
-
-        """for user in self.U.activeUserIndeces:
-                        Rec = recommendations[user]
-
-                    indecesOfChosenItems,indecesOfChosenItemsW =  self.U.choiceModule(Rec,
-                                                                                      self.U.Awareness[user,:],
-                                                                                      self.D[user,:],
-                                                                                      self.U.sessionSize(),
-                                                                                      control = self.algorithm=="Control")
-
-                    # Add item purchase to histories
-                    self.SalesHistory[user, indecesOfChosenItems] += 1
-
-                    # Compute new user position
-                    if self.algorithm is not "Control" and len(indecesOfChosenItems)>0:
-                        self.U.computeNewPositionOfUser(user, self.I.Items[indecesOfChosenItems])"""
