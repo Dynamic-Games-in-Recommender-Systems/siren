@@ -24,7 +24,7 @@ import random
 import time
 
 def EPC(Rec,RecAsMatrix,M,U_,Rtest):
-	""" Expected Popularity Complement (EPC). 
+	""" Expected Popularity Complement (EPC).
 
 	"""
 
@@ -56,13 +56,13 @@ def EFD(Rec,RecAsMatrix,M,U_,Rtest):
 		A.append(sum_*(-Cu))
 	#print("EFD:",np.mean(A))
 	return np.mean(A),np.std(A)
-			
+
 
 def EPD(Rec,RecAsMatrix,M,U_,Rtest,dist):
 	""" Expected Profile Distance (EPD).
 
 	"""
-	A = [] 
+	A = []
 	for u in range(U_):
 		if u not in Rec.keys(): continue
 		Cu = 1/np.sum([disc(i) for i,item in enumerate(Rec[u])])
@@ -82,7 +82,7 @@ def EILD(Rec,RecAsMatrix,M,U_,Rtest,dist):
 
 	"""
 
-	A = [] 
+	A = []
 	for u in range(U_):
 		if u not in Rec.keys(): continue
 		Cu = 1/np.sum([disc(i) for i,item in enumerate(Rec[u])])
@@ -172,14 +172,14 @@ def metrics(M,Rec,ItemFeatures,dist,Mafter):
 	e = time.time()
 	print("time:",e-s)
 	#(mEILD,sEILD) = EILD(Rec,RecAsMatrix,M,U_,Rtest,dist)
-	return {"EPC" :  mEPC,
-	"EPCstd" :  sEPC,
-	"ILD": 0,
-	"ILDstd": 0,
-	"EFD": 0,
-	"EFDstd": 0,  
-	"EPD": mEPD,
-	"EPDstd": mEPD,
-	"EILD": 0,
-	"EILDstd": 0}
-	
+	return mEPC
+	#{"EPC" :  mEPC,
+	#"EPCstd" :  sEPC,
+	#"ILD": 0,
+	#"ILDstd": 0,
+	#"EFD": 0,
+	#"EFDstd": 0,
+	#"EPD": mEPD,
+	#"EPDstd": mEPD,
+	#"EILD": 0,
+	#"EILDstd": 0}
