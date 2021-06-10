@@ -619,7 +619,7 @@ class Simulation():
                                 self.printj(" -- Nothing to recommend -- to user ",user)
                                 continue
                             Rec = recommendations[user]
-                            self.I.hasBeenRecommended[Rec] = 1 # TODO we might want to change that to only account for really recommended items (i.e. output of the game, not the RS)
+                            self.I.hasBeenRecommended[Rec] = 1
                             self.U.Awareness[user, Rec] = 1
 
                             # If recommended but previously purchased, minimize the awareness
