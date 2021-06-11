@@ -43,7 +43,7 @@ class Reexposition_game:
             # exposure[12] = 1.8
             exposures.append(exposure)
 
-        optimized_exposure = self.optimize_exposure(items, users, controlId, SalesHistory, exposure_factors, recommendations, 8, self.number_of_recommendations, 20 )
+        optimized_exposure = self.optimize_exposure(items, users, SalesHistory, controlId, exposure_factors, recommendations, 8, self.number_of_recommendations, 20, recommendation_strenghs)
 
         # apply exposure
         #temp = [list(recommendation_strenghs[key]) for key in recommendation_strenghs]
@@ -79,7 +79,9 @@ class Reexposition_game:
 
             return new_recommendations
 
-    def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations):
+    def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations,recommendation_strengths):
+        print("optimize_exposure",sales_history)
+
         # initialize population
         particles               = []
         best_for_particles      = []
@@ -131,7 +133,7 @@ class Reexposition_game:
                     exposure_parameters.append(user_exposure)
 
                 # update recommendation strengths based on particle position
-                updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, user_recommendations)
+                updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, recommendation_strengths)
                 new_recommendations = {}
                 for i in range(len(user_recommendations)):
 
