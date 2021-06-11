@@ -52,7 +52,7 @@ class Reexposition_game:
 
         #updates_probabilities = np.dot(exposure.T, old_probabilities)
 
-        updated_probabilities = self.update_probabilities(users.activeUserIndeces, optimized_exposure, recommendations)
+        updated_probabilities = self.update_probabilities(users.activeUserIndeces, optimized_exposure, recommendation_strenghs)
 
         # normalize?
 
@@ -76,8 +76,8 @@ class Reexposition_game:
                                            - the same goes for articles that are highly relevant to the user (i.e. are recommender system output is very high)
                                            -> search space might be reduced if we search more intensively along some kind of pareto line reconciling these three variables.
             '''
-
-            return new_recommendations
+        print("PLAY RETURN",new_recommendations)
+        return new_recommendations
 
     def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations,recommendation_strengths):
         print("optimize_exposure",sales_history)
@@ -221,6 +221,7 @@ class Reexposition_game:
 
         ### from the metrics
         sales_history_old = sales_history.copy()
+        sales_history_new = sales_history.copy()
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
 
@@ -232,7 +233,7 @@ class Reexposition_game:
             users.Awareness[user, Rec] = 1
 
                 # If recommended but previously purchased, minimize the awareness
-            users.Awareness[user, np.where(sales_history[user,Rec]>0)[0] ] = 0
+            users.Awareness[user, np.where(sales_history_new[user,Rec]>0)[0] ] = 0
 
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
@@ -247,10 +248,14 @@ class Reexposition_game:
                                                                             users.Awareness[user,:],
                                                                             controlId[user,:],
                                                                             users.sessionSize(),)
-            sales_history[user, indecesOfChosenItems] += 1
+            sales_history_new[user, indecesOfChosenItems] += 1
 
-        metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history)
-        print(metric)
+        metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history_new)
+        print("evaluate-old",sales_history)
+        print("evaluate-new",sales_history_new)
+        print("evaluate-diff",sales_history_new-sales_history_old)
+
+        print("EPC", metric)
         return metric
 
 

@@ -659,8 +659,8 @@ class Simulation():
 
                     self.printj(self.algorithm+": Diversity metrics...")
                     met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
-                    for key in met.keys():
-                        self.data["Diversity"][self.algorithm][key].append(met[key])
+                    #for key in met.keys():
+                    #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
                     self.printj(self.algorithm+": Distribution...")
                     for i in range(len(self.I.topics)):
