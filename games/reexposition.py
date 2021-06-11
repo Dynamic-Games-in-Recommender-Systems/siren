@@ -112,12 +112,13 @@ class Reexposition_game:
 
                 # define movement
                 v_inert = a * velocities[p]
-                v_previous_best = b * (best_for_particles[p] - particle[p]) * random.random()
-                v_neighbouring_best = c * (best_neighbour - [particle[p]]) * random.random()
-                new_position = particle[p] + (v_inert + v_previous_best + v_neighbouring_best)
-                print(new_position)
+                v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
+                v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
+                new_position = particles[p] + (v_inert + v_previous_best + v_neighbouring_best)
+
+                new_position = np.ndarray.round(new_position)
                 # check for illegal positions
-                particle[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
+                particles[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
 
                 # formulate pi from particle position:
                 exposure_parameters = []
