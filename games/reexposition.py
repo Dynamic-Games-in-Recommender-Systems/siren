@@ -255,8 +255,8 @@ class Reexposition_game:
         print("evaluate-new",sales_history_new)
         print("evaluate-diff",sales_history_new-sales_history_old)
 
-        print("EPC", metric)
-        return metric
+        print("EPC", metric["EPC"])
+        return metric["EPC"]
 
 
     def update_probabilities(self, activeUserIndeces, optimized_exposure, recommendation_strenghs):
