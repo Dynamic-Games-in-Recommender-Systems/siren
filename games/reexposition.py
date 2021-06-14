@@ -8,6 +8,7 @@ class Reexposition_game:
         pass
 
     def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId):
+        print("OLD RECOMMENDATIONS",recommendation_strenghs)
         new_recommendations     = {}
         exposures               = []
         exposure_factors        = [1.8,
@@ -59,13 +60,11 @@ class Reexposition_game:
 
         # sort and return best reommendations
         for i in range(len(recommendations)):
-            user_recommendations = np.array([recommendations[i], updated_probabilities[i]])
+            sorted_user_recommendations = [x for _,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
 
-            sorted_user_recommendations = user_recommendations[user_recommendations[:,1].argsort()]
+            filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
-            filtered_user_recommendations = sorted_user_recommendations[1, 0:self.number_of_recommendations]
-
-            new_recommendations[i] = [int(i) for i in filtered_user_recommendations.tolist()]
+            new_recommendations[i] = filtered_user_recommendations
 
             '''Opitmization:
                 PSO/other evolutionary algorithm ?
@@ -76,11 +75,10 @@ class Reexposition_game:
                                            - the same goes for articles that are highly relevant to the user (i.e. are recommender system output is very high)
                                            -> search space might be reduced if we search more intensively along some kind of pareto line reconciling these three variables.
             '''
-        print("PLAY RETURN",new_recommendations)
         return new_recommendations
 
     def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations,recommendation_strengths):
-        print("optimize_exposure",sales_history)
+        #print("optimize_exposure",sales_history)
 
         # initialize population
         particles               = []
@@ -97,7 +95,7 @@ class Reexposition_game:
         for i in range(n_particles):
 
             particle = np.random.randint(number_of_recommendations, size = len(exposure_set) * len(user_recommendations))
-            print(particle)
+            #print(particle)
             self.legalize_position(particle, len(exposure_set), number_of_recommendations)
             best_neighbour = particle
             best_score     = 0
@@ -111,7 +109,6 @@ class Reexposition_game:
         # iterate for each generation
         for g in range(number_of_generations):
             for p in range(len(particles)):
-
                 # define movement
                 v_inert = a * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
@@ -133,16 +130,20 @@ class Reexposition_game:
                     exposure_parameters.append(user_exposure)
 
                 # update recommendation strengths based on particle position
-                updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, recommendation_strengths)
+                updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, recommendation_strengths) #TODO: at this point updated probabilities is not sorted
                 new_recommendations = {}
+
+                #print("OLD:", user_recommendations)
+
                 for i in range(len(user_recommendations)):
+                    sorted_user_recommendations = [x for _, x in
+                                                   sorted(zip(updated_probabilities[i], user_recommendations[i]))]
 
-                    recommendations = np.array([user_recommendations[i], updated_probabilities[i]])
+                    filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
-                    sorted_user_recommendations = recommendations[recommendations[:,1].argsort()]
+                    new_recommendations[i] = filtered_user_recommendations
 
-                    filtered_user_recommendations = sorted_user_recommendations[1, 0:self.number_of_recommendations]
-                    new_recommendations[i] = [int(i) for i in filtered_user_recommendations.tolist()]
+                #print("NEW:", new_recommendations)
 
                 # evaluate position
                 value = self.evaluate(users, items, sales_history, new_recommendations, controlId)
@@ -251,11 +252,8 @@ class Reexposition_game:
             sales_history_new[user, indecesOfChosenItems] += 1
 
         metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history_new)
-        print("evaluate-old",sales_history)
-        print("evaluate-new",sales_history_new)
-        print("evaluate-diff",sales_history_new-sales_history_old)
 
-        print("EPC", metric["EPC"])
+        print("PSO - EPC", metric["EPC"])
         return metric["EPC"]
 
 
