@@ -555,7 +555,7 @@ class Simulation():
 
 
     #TODO here the sumulation is run need to find a way to make it iteration-esque
-    def runSimulation(self):
+    def runSimulation(self, a, b, c, pi, num_particles, num_generations):
         """ The main simulation function.
 
         For different simulation instantiations to run on the same random order of items
@@ -608,7 +608,8 @@ class Simulation():
                     self.Rec.exportToMMLdocuments()
                     recommendations, recommendation_probabilities = self.Rec.mmlRecommendation(len(self.I.activeItemIndeces))
                     #Calculate new recommendations
-                    recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D)
+                    recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D,
+                                                a, b, c, pi, num_particles, num_generations)
 
                     # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics
                     for user in self.U.activeUserIndeces:
@@ -659,6 +660,7 @@ class Simulation():
 
                     self.printj(self.algorithm+": Diversity metrics...")
                     met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
+                    print('EPC best value', met['EPC'])
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
@@ -831,9 +833,37 @@ class Simulation():
 
 # main function
 if __name__ == '__main__':
+    # active_users = 3
+    # days = 3
+    # num_pub_articles = 100
+    # num_rec_articles = 10
+    # num_read_articles = 6
+
+    a                      = 2
+    b                      = 2
+    c                      = 2
+    num_particles          = 8
+    num_generations        = 20
+    pi                     = [
+                            1.8,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05
+                            ]
+
+
     sim = Simulation()
     sim.setSettings()
     sim.initWithSettings()
-    sim.runSimulation()
+    sim.runSimulation(a, b, c, pi, num_particles, num_generations)
 
     #todo make an exit condition

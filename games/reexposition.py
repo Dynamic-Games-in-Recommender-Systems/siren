@@ -7,23 +7,12 @@ class Reexposition_game:
         self.number_of_recommendations = number_of_recommendations
         pass
 
-    def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId):
+    def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId,
+             a, b, c, pi, num_particles, num_generations):
         print("OLD RECOMMENDATIONS",recommendation_strenghs)
         new_recommendations     = {}
         exposures               = []
-        exposure_factors        = [1.8,
-                                   1.2,
-                                   1.2,
-                                   1.2,
-                                   1.2,
-                                   1.05,
-                                   1.05,
-                                   1.05,
-                                   1.05,
-                                   1.05,
-                                   1.05,
-                                   1.05,
-                                   1.05]
+        exposure_factors        = pi
 
         for user in range(len(users.activeUserIndeces)):
             exposure = np.zeros(len(recommendation_strenghs[user]))
@@ -44,7 +33,9 @@ class Reexposition_game:
             # exposure[12] = 1.8
             exposures.append(exposure)
 
-        optimized_exposure = self.optimize_exposure(items, users, SalesHistory, controlId, exposure_factors, recommendations, 8, self.number_of_recommendations, 20, recommendation_strenghs)
+        optimized_exposure = self.optimize_exposure(items, users, SalesHistory, controlId, exposure_factors,
+                                                    recommendations, num_particles, self.number_of_recommendations,
+                                                    num_generations, recommendation_strenghs, a, b, c)
 
         # apply exposure
         #temp = [list(recommendation_strenghs[key]) for key in recommendation_strenghs]
@@ -77,7 +68,8 @@ class Reexposition_game:
             '''
         return new_recommendations
 
-    def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles, number_of_recommendations, number_of_generations,recommendation_strengths):
+    def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles,
+                          number_of_recommendations, number_of_generations,recommendation_strengths, a, b, c):
         #print("optimize_exposure",sales_history)
 
         # initialize population
@@ -88,9 +80,9 @@ class Reexposition_game:
         best_neighbour          = None
         best_neighbour_score    = 0
         a_decay                 = 0.00001
-        a                       = 2
-        b                       = 2
-        c                       = 2
+        a                       = a
+        b                       = b
+        c                       = c
 
         for i in range(n_particles):
 
@@ -253,7 +245,12 @@ class Reexposition_game:
 
         metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history_new)
 
-        print("PSO - EPC", metric["EPC"])
+        # print("PSO - EPC", metric["EPC"])
+        # print("evaluate-old",sales_history)
+        # print("evaluate-new",sales_history_new)
+        # print("evaluate-diff",sales_history_new-sales_history_old)
+
+        # print("EPC", metric["EPC"])
         return metric["EPC"]
 
 
