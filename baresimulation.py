@@ -544,7 +544,7 @@ class Simulation():
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": 11,  #change this to set the desired amount of predicted articles
+                         "Number of recommended articles per day": 13,  #change this to set the desired amount of predicted articles
                          "Average read articles per day": 6,
                          "Reading focus": 0.6,
                          "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
@@ -834,38 +834,38 @@ class Simulation():
             for u in range(self.U.totalNumberOfUsers): self.D[u,self.I.activeItemIndeces] = D[u,:]
 
 # main function
-# if __name__ == '__main__':
-    # active_users = 3
-    # days = 3
-    # num_pub_articles = 100
-    # num_rec_articles = 10
-    # num_read_articles = 6
+if __name__ == '__main__':
+    active_users = 3
+    days = 3
+    num_pub_articles = 100
+    num_rec_articles = 10
+    num_read_articles = 6
 
-    # a                      = 2
-    # b                      = 2
-    # c                      = 2
-    # num_particles          = 8
-    # num_generations        = 20
-    # pi                     = [
-    #                         1.8,
-    #                         1.2,
-    #                         1.2,
-    #                         1.2,
-    #                         1.2,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05
-    #                         ]
-    #
-    #
-    # sim = Simulation()
-    # sim.setSettings()
-    # sim.initWithSettings()
-    # sim.runSimulation(a, b, c, pi, num_particles, num_generations)
+    a                      = 2
+    b                      = 2
+    c                      = 2
+    num_particles          = 8
+    num_generations        = 200
+    pi                     = [
+                            1.8,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05
+                            ]
 
-    #todo make an exit condition
+
+    sim = Simulation()
+    sim.setSettings()
+    sim.initWithSettings()
+    sim.runSimulation(a, b, c, pi, num_particles, num_generations)
+
+    # todo make an exit condition
