@@ -659,8 +659,8 @@ class Simulation():
                 if self.algorithm is not "Control":
 
                     self.printj(self.algorithm+": Diversity metrics...")
-                    met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
-                    print('EPC best value', met['EPC'])
+                    self.met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
+                    print('EPC best value', self.met['EPC'])
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 

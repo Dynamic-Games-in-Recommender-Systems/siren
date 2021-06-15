@@ -1,4 +1,5 @@
 from baresimulation import Simulation
+import pandas as pd
 
 a = 2
 b = 2
@@ -23,12 +24,19 @@ pi = [
 
 def experiment_a():
     # a_arr = [1 + (i*.2) for i in range(16)]
+    print("START EXPERIMENT")
     a_arr = [1.8, 2, 2.2]
+    met_arr = pd.DataFrame()
+
     for a in a_arr:
         sim = Simulation()
         sim.setSettings()
         sim.initWithSettings()
         sim.runSimulation(a, b, c, pi, num_particles, num_generations)
+        met_arr = met_arr.append(sim.met, ignore_index=True)
+
+    print(met_arr)
+
     ## Return the metrics and maybe store in csv file.
 
 def experiment_b():

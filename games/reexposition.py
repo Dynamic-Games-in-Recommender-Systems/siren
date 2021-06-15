@@ -18,19 +18,6 @@ class Reexposition_game:
             exposure = np.zeros(len(recommendation_strenghs[user]))
             for exposure_factor in range(len(exposure_factors)):
                 exposure[exposure_factor] = exposure_factors[exposure_factor]
-            # exposure[0] = 1.05
-            # exposure[1] = 1.05
-            # exposure[2] = 1.05
-            # exposure[3] = 1.05
-            # exposure[4] = 1.05
-            # exposure[5] = 1.05
-            # exposure[6] = 1.05
-            # exposure[7] = 1.05
-            # exposure[8] = 1.2
-            # exposure[9] = 1.2
-            # exposure[10] = 1.2
-            # exposure[11] = 1.2
-            # exposure[12] = 1.8
             exposures.append(exposure)
 
         optimized_exposure = self.optimize_exposure(items, users, SalesHistory, controlId, exposure_factors,
