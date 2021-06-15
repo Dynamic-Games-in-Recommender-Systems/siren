@@ -844,7 +844,7 @@ if __name__ == '__main__':
     num_rec_articles = 10
     num_read_articles = 6
     num_generations        = 200
-    a                      = np.linspace(0.9, 0.4, num_generations)
+    a                      = 2
     b                      = 2
     c                      = 2
     num_particles          = 12
