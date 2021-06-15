@@ -91,7 +91,7 @@ class Reexposition_game:
             print(f"Generation {g}/{number_of_generations}")
             for p in range(len(particles)):
                 # define movement
-                v_inert = a * velocities[p]
+                v_inert = a[i] * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
                 new_position = particles[p] + (v_inert + v_previous_best + v_neighbouring_best)
