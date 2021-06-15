@@ -847,13 +847,8 @@ if __name__ == '__main__':
     a                      = np.linspace(0.9, 0.4, num_generations)
     b                      = 2
     c                      = 2
-<<<<<<< HEAD
     num_particles          = 12
     num_generations        = 300
-=======
-    num_particles          = 8
-
->>>>>>> 651207d0e64aaa102ff3760d355028a5d1508541
     pi                     = [
                             1.8,
                             1.2,
