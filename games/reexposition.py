@@ -95,6 +95,8 @@ class Reexposition_game:
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
                 new_position = particles[p] + (v_inert + v_previous_best + v_neighbouring_best)
+                velocities[p] = new_position - particles[p]
+                # TODO might also update the velocity to achieve better results
 
                 #new_position = np.ndarray.round(new_position)
                 # check for illegal positions
@@ -134,8 +136,10 @@ class Reexposition_game:
                 # after evaluation, update the best positions and the best neighbour value
                 if value > best_score_per_particle[p]:
                     best_score_per_particle[p] = value
+                    best_for_particles[p] = particles[p]
                     if value > best_score:
                         best_score = value
+                        best_neighbour = particles[p] # TODO also make this the best neighbour per round!
 
             a = a - a_decay
 
