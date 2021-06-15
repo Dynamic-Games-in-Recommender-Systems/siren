@@ -172,13 +172,17 @@ def metrics(M,Rec,ItemFeatures,dist,Mafter):
 	e = time.time()
 	# print("time:",e-s)
 	#(mEILD,sEILD) = EILD(Rec,RecAsMatrix,M,U_,Rtest,dist)
+	# return {"EPC" :  mEPC,
+	# "EPCstd" :  sEPC,
+	# "ILD": 0,
+	# "ILDstd": 0,
+	# "EFD": 0,
+	# "EFDstd": 0,
+	# "EPD": mEPD,
+	# "EPDstd": mEPD,
+	# "EILD": 0,
+	# "EILDstd": 0}
 	return {"EPC" :  mEPC,
 	"EPCstd" :  sEPC,
-	"ILD": 0,
-	"ILDstd": 0,
-	"EFD": 0,
-	"EFDstd": 0,
 	"EPD": mEPD,
-	"EPDstd": mEPD,
-	"EILD": 0,
-	"EILDstd": 0}
+	"EPDstd": mEPD}

@@ -9,7 +9,7 @@ class Reexposition_game:
 
     def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId,
              a, b, c, pi, num_particles, num_generations):
-        print("OLD RECOMMENDATIONS",recommendation_strenghs)
+        # print("OLD RECOMMENDATIONS",recommendation_strenghs)
         new_recommendations     = {}
         exposures               = []
         exposure_factors        = pi
@@ -70,6 +70,7 @@ class Reexposition_game:
         a                       = a
         b                       = b
         c                       = c
+        print(exposure_set)
 
         for i in range(n_particles):
 

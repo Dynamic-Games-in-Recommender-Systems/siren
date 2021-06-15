@@ -521,6 +521,7 @@ class Simulation():
 
     def __init__(self):
         self.settings = {}
+        self.met_out = []
 
     #TODO change(set) the settings
     def setSettings(self):
@@ -537,13 +538,13 @@ class Simulation():
         #                  "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
         #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
 
-        self.settings = {"Number of active users per day": 3,           # Population
-                         "Days" : 3,                                    # Number of iterations
+        self.settings = {"Number of active users per day": 20,           # Population
+                         "Days" : 9,                                    # Number of iterations
                          "seed": int(1),                                #
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": 10,  #change this to set the desired amount of predicted articles
+                         "Number of recommended articles per day": 11,  #change this to set the desired amount of predicted articles
                          "Average read articles per day": 6,
                          "Reading focus": 0.6,
                          "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
@@ -659,8 +660,9 @@ class Simulation():
                 if self.algorithm is not "Control":
 
                     self.printj(self.algorithm+": Diversity metrics...")
-                    self.met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
-                    print('EPC best value', self.met['EPC'])
+                    met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
+                    print('EPC best value', met['EPC'])
+                    self.met_out.append(met)
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
@@ -832,38 +834,38 @@ class Simulation():
             for u in range(self.U.totalNumberOfUsers): self.D[u,self.I.activeItemIndeces] = D[u,:]
 
 # main function
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # active_users = 3
     # days = 3
     # num_pub_articles = 100
     # num_rec_articles = 10
     # num_read_articles = 6
 
-    a                      = 2
-    b                      = 2
-    c                      = 2
-    num_particles          = 8
-    num_generations        = 20
-    pi                     = [
-                            1.8,
-                            1.2,
-                            1.2,
-                            1.2,
-                            1.2,
-                            1.05,
-                            1.05,
-                            1.05,
-                            1.05,
-                            1.05,
-                            1.05,
-                            1.05,
-                            1.05
-                            ]
-
-
-    sim = Simulation()
-    sim.setSettings()
-    sim.initWithSettings()
-    sim.runSimulation(a, b, c, pi, num_particles, num_generations)
+    # a                      = 2
+    # b                      = 2
+    # c                      = 2
+    # num_particles          = 8
+    # num_generations        = 20
+    # pi                     = [
+    #                         1.8,
+    #                         1.2,
+    #                         1.2,
+    #                         1.2,
+    #                         1.2,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05,
+    #                         1.05
+    #                         ]
+    #
+    #
+    # sim = Simulation()
+    # sim.setSettings()
+    # sim.initWithSettings()
+    # sim.runSimulation(a, b, c, pi, num_particles, num_generations)
 
     #todo make an exit condition
