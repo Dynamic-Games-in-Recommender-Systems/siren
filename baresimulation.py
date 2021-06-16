@@ -767,7 +767,7 @@ class Simulation():
         I.topicsProminence = self.settings["Overall topic prominence"]
         I.numberOfNewItemsPI = int(self.settings["Number of published articles per day"])
 
-        I.generatePopulation(totalNumberOfIterationsSimulation) #TODO number of iterations of simulation
+        I.generatePopulation(self.totalNumberOfIterations) #TODO number of iterations of simulation
         U.generatePopulation()
 
         self.printj("Create simulation instance...")
