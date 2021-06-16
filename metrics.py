@@ -153,6 +153,19 @@ def computeGinis(S, C):
 	G2 = gini(np.sum(S,axis=0))
 	return G2 - G1
 
+def accuracy(R_test, recommendations, U_, M):
+	from sklearn.metrics import jaccard_score
+	accuracy_arr = []
+
+	for u in range(U_):
+		read_articles = np.where(R_test[u,:] >=1)[0]
+		read_articles_bin = R_test[u,:].astype('int64')
+		recommended_articles_bin = np.bincount(recommendations[u], minlength = len(read_articles_bin))
+
+		#TODO print the jaccard score between the two matrices.  true = read_articles bin
+		accuracy_arr.append(jaccard_score(read_articles_bin, recommended_articles_bin))
+
+	return np.mean(accuracy_arr), np.std(accuracy_arr)
 
 def metrics(M,Rec,ItemFeatures,dist,Mafter):
 	U_ = M.shape[0]
@@ -170,6 +183,11 @@ def metrics(M,Rec,ItemFeatures,dist,Mafter):
 	s = time.time()
 	(mEPD,sEPD) = EPD(Rec,RecAsMatrix,M,U_,Rtest,dist)
 	e = time.time()
+
+	#todo add accuracy
+	mAcc, sAcc = accuracy(Rtest, Rec, U_, M)
+
+
 	# print("time:",e-s)
 	#(mEILD,sEILD) = EILD(Rec,RecAsMatrix,M,U_,Rtest,dist)
 	# return {"EPC" :  mEPC,
@@ -185,4 +203,6 @@ def metrics(M,Rec,ItemFeatures,dist,Mafter):
 	return {"EPC" :  mEPC,
 	"EPCstd" :  sEPC,
 	"EPD": mEPD,
-	"EPDstd": mEPD}
+	"EPDstd": mEPD,
+	"Accuracy": mAcc,
+	"Accuracystd": sAcc}
