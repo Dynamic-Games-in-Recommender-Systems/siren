@@ -55,7 +55,6 @@ else:
 from matplotlib.figure import Figure
 
 
-totalNumberOfIterationsSimulation = 1
 
 def cdf(weights):
 
