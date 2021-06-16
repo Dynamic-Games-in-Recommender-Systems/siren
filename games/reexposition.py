@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import metrics
+import copy
 
 class Reexposition_game:
     def __init__(self, number_of_recommendations):
@@ -38,7 +39,9 @@ class Reexposition_game:
 
         # sort and return best reommendations
         for i in range(len(recommendations)):
-            sorted_user_recommendations = [x for _,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
+            sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+            sorted_user_recommendations = [recommendations[i][k] for k in sorted_y_idx_list ]
+            #sorted_user_recommendations = [x for y,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
 
             filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
@@ -66,14 +69,14 @@ class Reexposition_game:
         velocities              = []
         best_neighbour          = None
         best_neighbour_score    = 0
-        a_decay                 = 0.00001
         a                       = a
         b                       = b
         c                       = c
+        a_decay                 = ( a*5/6 )/(number_of_generations)
         print(exposure_set)
 
         for i in range(n_particles):
-
+            print(f"particle {i}")
             particle = np.random.randint(number_of_recommendations, size = len(exposure_set) * len(user_recommendations))
             #print(particle)
             self.legalize_position(particle, len(exposure_set), number_of_recommendations)
@@ -88,14 +91,17 @@ class Reexposition_game:
 
         # iterate for each generation
         for g in range(number_of_generations):
+            print(f"Generation {g}/{number_of_generations}")
             for p in range(len(particles)):
                 # define movement
                 v_inert = a * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
                 new_position = particles[p] + (v_inert + v_previous_best + v_neighbouring_best)
+                velocities[p] = new_position - particles[p]
+                # TODO might also update the velocity to achieve better results
 
-                new_position = np.ndarray.round(new_position)
+                #new_position = np.ndarray.round(new_position)
                 # check for illegal positions
                 particles[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
 
@@ -116,8 +122,11 @@ class Reexposition_game:
                 #print("OLD:", user_recommendations)
 
                 for i in range(len(user_recommendations)):
-                    sorted_user_recommendations = [x for _, x in
-                                                   sorted(zip(updated_probabilities[i], user_recommendations[i]))]
+
+                    sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+                    sorted_user_recommendations = [user_recommendations[i][k] for k in sorted_y_idx_list ]
+                    #sorted_user_recommendations = [x for y, x in
+                                                  # sorted(zip(updated_probabilities[i], user_recommendations[i]))]
 
                     filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
@@ -133,8 +142,12 @@ class Reexposition_game:
                 # after evaluation, update the best positions and the best neighbour value
                 if value > best_score_per_particle[p]:
                     best_score_per_particle[p] = value
+                    best_for_particles[p] = particles[p]
                     if value > best_score:
                         best_score = value
+                        best_neighbour = particles[p] # TODO also make this the best neighbour per round!
+
+            a = a - a_decay
 
         # formulate pi from particle position:
         exposure_parameters = []
@@ -149,6 +162,7 @@ class Reexposition_game:
         return exposure_parameters
 
     def legalize_position(self, particle, parameters_per_user, max_value):
+        particle = np.reshape(particle, (260))
         for i in range(len(particle)):
             if i%parameters_per_user == 0:
                 continue
@@ -166,8 +180,10 @@ class Reexposition_game:
                         particle[i] += 1
                     if particle[i] <= -0.5:
                         left = False
+                        particle[i] += 2
                     if particle[i] >= max_value + 0.5:
                         left = True
+                        particle[i] -= 2
                     illegal = self.check_illegality(parameters_per_user, particle, i)
         return particle
 
@@ -203,6 +219,8 @@ class Reexposition_game:
         ### from the metrics
         sales_history_old = sales_history.copy()
         sales_history_new = sales_history.copy()
+        prior_recommendations = np.copy(items.hasBeenRecommended)
+        awareness = copy.deepcopy(users.Awareness)
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
 
@@ -210,11 +228,11 @@ class Reexposition_game:
                 self.printj(" -- Nothing to recommend -- to user ",user)
                 continue
             Rec = user_recommendations[user]
-            items.hasBeenRecommended[Rec] = 1
-            users.Awareness[user, Rec] = 1
+            prior_recommendations[Rec] = 1
+            awareness[user, Rec] = 1
 
                 # If recommended but previously purchased, minimize the awareness
-            users.Awareness[user, np.where(sales_history_new[user,Rec]>0)[0] ] = 0
+            awareness[user, np.where(sales_history_old[user,Rec]>0)[0] ] = 0
 
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
@@ -226,7 +244,7 @@ class Reexposition_game:
             Rec = user_recommendations[user]
 
             indecesOfChosenItems,indecesOfChosenItemsW =  users.choiceModule(Rec,
-                                                                            users.Awareness[user,:],
+                                                                            awareness[user,:],
                                                                             controlId[user,:],
                                                                             users.sessionSize(),)
             sales_history_new[user, indecesOfChosenItems] += 1

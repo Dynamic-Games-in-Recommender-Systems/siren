@@ -544,7 +544,7 @@ class Simulation():
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,
                          "outfolder": "output-"+str(time.time()),
-                         "Number of recommended articles per day": 11,  #change this to set the desired amount of predicted articles
+                         "Number of recommended articles per day": 13,  #change this to set the desired amount of predicted articles
                          "Average read articles per day": 6,
                          "Reading focus": 0.6,
                          "Recommender algorithms": ['UserAttributeKNN'], # name of the recommender algorithm, can debug the full simulation to get all possible values
@@ -556,7 +556,7 @@ class Simulation():
 
 
     #TODO here the sumulation is run need to find a way to make it iteration-esque
-    def runSimulation(self, a, b, c, pi, num_particles, num_generations):
+    def runSimulation(self, a, b, c, pi, num_particles, num_generations, game_trigger, stochastic=False):
         """ The main simulation function.
 
         For different simulation instantiations to run on the same random order of items
@@ -608,10 +608,17 @@ class Simulation():
                     self.Rec.setData(self.U, self.I, self.algorithm, self.SalesHistory)
                     self.Rec.exportToMMLdocuments()
                     recommendations, recommendation_probabilities = self.Rec.mmlRecommendation(len(self.I.activeItemIndeces))
-                    #Calculate new recommendations
-                    recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D,
-                                                a, b, c, pi, num_particles, num_generations)
-
+                    recommendations_before = recommendations.copy()
+                    #Calculate new recommendation
+                    if(game_trigger == True):
+                    	recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D,
+                                                	a, b, c, pi, num_particles, num_generations)
+                    # Use only 11 top articles
+                    else:
+                        for rec_key in recommendations:
+                            recommendations[rec_key] = recommendations[rec_key][0:self.settings["Number of recommended articles per day"]]
+                    #print("before", recommendations_before)
+                    #print("after", recommendations)
                     # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics
                     for user in self.U.activeUserIndeces:
                         Rec=np.array([-1])
@@ -621,6 +628,7 @@ class Simulation():
                                 self.printj(" -- Nothing to recommend -- to user ",user)
                                 continue
                             Rec = recommendations[user]
+
                             self.I.hasBeenRecommended[Rec] = 1
                             self.U.Awareness[user, Rec] = 1
 
@@ -643,7 +651,20 @@ class Simulation():
                                                                                       self.D[user,:],
                                                                                       self.U.sessionSize(),
                                                                                       control = self.algorithm=="Control")
+                    print("Recommended articles ", Rec)
+                    print("Read articles stochastic", indecesOfChosenItems)
+                    if set(indecesOfChosenItems).issubset(set(Rec)):
+                        print('True')
+                    else:
+                        print('False')
+                    print("Read articles NO-stochastic", indecesOfChosenItemsW)
+                    if set(indecesOfChosenItemsW).issubset(set(Rec)):
+                        print('True')
+                    else:
+                        print('False')
 
+                    if not stochastic:
+                        indecesOfChosenItems = indecesOfChosenItemsW
                     # Add item purchase to histories
                     self.SalesHistory[user, indecesOfChosenItems] += 1
 
@@ -746,7 +767,7 @@ class Simulation():
         I.topicsProminence = self.settings["Overall topic prominence"]
         I.numberOfNewItemsPI = int(self.settings["Number of published articles per day"])
 
-        I.generatePopulation(totalNumberOfIterationsSimulation) #TODO number of iterations of simulation
+        I.generatePopulation(self.totalNumberOfIterations) #TODO number of iterations of simulation
         U.generatePopulation()
 
         self.printj("Create simulation instance...")
@@ -834,38 +855,38 @@ class Simulation():
             for u in range(self.U.totalNumberOfUsers): self.D[u,self.I.activeItemIndeces] = D[u,:]
 
 # main function
-# if __name__ == '__main__':
-    # active_users = 3
-    # days = 3
-    # num_pub_articles = 100
-    # num_rec_articles = 10
-    # num_read_articles = 6
+if __name__ == '__main__':
+    active_users = 20
+    days = 9
+    num_pub_articles = 100
+    num_rec_articles = 10
+    num_read_articles = 6
+    num_generations        = 200
+    a                      = 2
+    b                      = 2
+    c                      = 2
+    num_particles          = 12
+    num_generations        = 10
+    pi                     = [
+                            1.8,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.2,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05,
+                            1.05
+                            ]
+    game_trigger = True
 
-    # a                      = 2
-    # b                      = 2
-    # c                      = 2
-    # num_particles          = 8
-    # num_generations        = 20
-    # pi                     = [
-    #                         1.8,
-    #                         1.2,
-    #                         1.2,
-    #                         1.2,
-    #                         1.2,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05,
-    #                         1.05
-    #                         ]
-    #
-    #
-    # sim = Simulation()
-    # sim.setSettings()
-    # sim.initWithSettings()
-    # sim.runSimulation(a, b, c, pi, num_particles, num_generations)
+    sim = Simulation()
+    sim.setSettings()
+    sim.initWithSettings()
+    sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger, stochastic=True)
 
-    #todo make an exit condition
+    # todo make an exit condition
