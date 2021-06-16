@@ -111,7 +111,7 @@ class Reexposition_game:
                     user_exposure = np.zeros(len(user_recommendations[user_id]))
 
                     for exposure_index in range(len(exposure_set)):
-                        user_exposure[round(particle[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
+                        user_exposure[round(particles[g][user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
 
                     exposure_parameters.append(user_exposure)
 
@@ -155,7 +155,7 @@ class Reexposition_game:
             user_exposure = np.zeros(len(user_recommendations[user_id]))
 
             for exposure_index in range(len(exposure_set)):
-                user_exposure[round(particle[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
+                user_exposure[round(best_neighbour[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
 
             exposure_parameters.append(user_exposure)
 
@@ -196,26 +196,6 @@ class Reexposition_game:
         return is_illegal
 
     def evaluate(self, users, items, sales_history, user_recommendations, controlId):
-        # calculate awareness#
-        """ # potentially simplified awareness
-
-        for user in users.activeUserIndeces:
-            exposed_items = user_recommendations[user]
-
-            awareness = users.Awareness.copy()
-            users.Awareness[user, exposed_items] = 1
-            users.Awareness[user, np.where(sales_history[user,exposed_items]>0)[0] ] = 0 # If recommended but previously purchased, minimize the awareness
-
-
-
-
-            indecesOfChosenItems,indecesOfChosenItemsW =  self.U.choiceModule(Rec,
-                                                                    self.U.Awareness[user,:], # need to set to one for all selected items
-                                                                    self.D[user,:], # the heck is that?
-                                                                    self.U.sessionSize(), #this should just be the number of selected items
-                                                                    control = self.algorithm=="Control") # we skip this
-        """
-
         ### from the metrics
         sales_history_old = sales_history.copy()
         sales_history_new = sales_history.copy()

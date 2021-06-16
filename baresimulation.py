@@ -864,8 +864,8 @@ if __name__ == '__main__':
     a                      = 2
     b                      = 2
     c                      = 2
-    num_particles          = 12
-    num_generations        = 10
+    num_particles          = 8
+    num_generations        = 100
     pi                     = [
                             1.8,
                             1.2,
