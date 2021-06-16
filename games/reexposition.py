@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import metrics
+import copy
 
 class Reexposition_game:
     def __init__(self, number_of_recommendations):
@@ -218,6 +219,8 @@ class Reexposition_game:
         ### from the metrics
         sales_history_old = sales_history.copy()
         sales_history_new = sales_history.copy()
+        prior_recommendations = np.copy(items.hasBeenRecommended)
+        awareness = copy.deepcopy(users.Awareness)
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
 
@@ -225,11 +228,11 @@ class Reexposition_game:
                 self.printj(" -- Nothing to recommend -- to user ",user)
                 continue
             Rec = user_recommendations[user]
-            items.hasBeenRecommended[Rec] = 1
-            users.Awareness[user, Rec] = 1
+            prior_recommendations[Rec] = 1
+            awareness[user, Rec] = 1
 
                 # If recommended but previously purchased, minimize the awareness
-            users.Awareness[user, np.where(sales_history_new[user,Rec]>0)[0] ] = 0
+            awareness[user, np.where(sales_history_old[user,Rec]>0)[0] ] = 0
 
         for user in users.activeUserIndeces:
             Rec=np.array([-1])
@@ -241,7 +244,7 @@ class Reexposition_game:
             Rec = user_recommendations[user]
 
             indecesOfChosenItems,indecesOfChosenItemsW =  users.choiceModule(Rec,
-                                                                            users.Awareness[user,:],
+                                                                            awareness[user,:],
                                                                             controlId[user,:],
                                                                             users.sessionSize(),)
             sales_history_new[user, indecesOfChosenItems] += 1

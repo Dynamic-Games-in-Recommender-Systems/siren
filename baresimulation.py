@@ -882,7 +882,7 @@ if __name__ == '__main__':
                             1.05,
                             1.05
                             ]
-    game_trigger = False
+    game_trigger = True
 
     sim = Simulation()
     sim.setSettings()
