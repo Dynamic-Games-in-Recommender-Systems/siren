@@ -2,6 +2,7 @@ import numpy as np
 import random
 import metrics
 import copy
+import math
 
 class Reexposition_game:
     def __init__(self, number_of_recommendations):
@@ -117,7 +118,7 @@ class Reexposition_game:
                     user_exposure = np.zeros(len(user_recommendations[user_id]))
 
                     for exposure_index in range(len(exposure_set)):
-                        user_exposure[round(particles[g][user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
+                        user_exposure[round(particles[p][user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
 
                     exposure_parameters.append(user_exposure)
 
@@ -179,7 +180,7 @@ class Reexposition_game:
             while particle[i] <= -0.5:
                 left = False
                 particle[i] += 2
-            while particle[i] >= max_values[i%parameters_per_user] - 0.5:
+            while particle[i] >= max_values[int(math.floor(i/parameters_per_user))] - 0.5:
                 left = True
                 particle[i] -= 2
 
@@ -194,6 +195,12 @@ class Reexposition_game:
                         particle[i] -= 1
                     else:
                         particle[i] += 1
+                    while particle[i] <= -0.5:
+                        left = False
+                        particle[i] += 2
+                    while particle[i] >= max_values[int(math.floor(i/parameters_per_user))] - 0.5:
+                        left = True
+                        particle[i] -= 2
 
                     illegal = self.check_illegality(parameters_per_user, particle, i)
         return particle
