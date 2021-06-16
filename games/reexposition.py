@@ -38,7 +38,9 @@ class Reexposition_game:
 
         # sort and return best reommendations
         for i in range(len(recommendations)):
-            sorted_user_recommendations = [x for _,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
+            sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+            sorted_user_recommendations = [recommendations[i][k] for k in sorted_y_idx_list ]
+            #sorted_user_recommendations = [x for y,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
 
             filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
@@ -119,8 +121,11 @@ class Reexposition_game:
                 #print("OLD:", user_recommendations)
 
                 for i in range(len(user_recommendations)):
-                    sorted_user_recommendations = [x for _, x in
-                                                   sorted(zip(updated_probabilities[i], user_recommendations[i]))]
+
+                    sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+                    sorted_user_recommendations = [user_recommendations[i][k] for k in sorted_y_idx_list ]
+                    #sorted_user_recommendations = [x for y, x in
+                                                  # sorted(zip(updated_probabilities[i], user_recommendations[i]))]
 
                     filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
