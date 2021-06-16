@@ -556,7 +556,7 @@ class Simulation():
 
 
     #TODO here the sumulation is run need to find a way to make it iteration-esque
-    def runSimulation(self, a, b, c, pi, num_particles, num_generations, game_trigger):
+    def runSimulation(self, a, b, c, pi, num_particles, num_generations, game_trigger, stochastic=False):
         """ The main simulation function.
 
         For different simulation instantiations to run on the same random order of items
@@ -613,6 +613,10 @@ class Simulation():
                     if(game_trigger == True):
                     	recommendations = game.play(recommendations, recommendation_probabilities,self.I, self.U, self.SalesHistory, self.D,
                                                 	a, b, c, pi, num_particles, num_generations)
+                    # Use only 11 top articles
+                    else:
+                        for rec_key in recommendations:
+                            recommendations[rec_key] = recommendations[rec_key][0:self.settings["Number of recommended articles per day"]]
                     #print("before", recommendations_before)
                     #print("after", recommendations)
                     # Add recommendations to each user's awareness pool TODO this whole awareness management needs to be properly formalized in terms of the game mechanics
@@ -624,6 +628,7 @@ class Simulation():
                                 self.printj(" -- Nothing to recommend -- to user ",user)
                                 continue
                             Rec = recommendations[user]
+
                             self.I.hasBeenRecommended[Rec] = 1
                             self.U.Awareness[user, Rec] = 1
 
@@ -646,7 +651,20 @@ class Simulation():
                                                                                       self.D[user,:],
                                                                                       self.U.sessionSize(),
                                                                                       control = self.algorithm=="Control")
+                    print("Recommended articles ", Rec)
+                    print("Read articles stochastic", indecesOfChosenItems)
+                    if set(indecesOfChosenItems).issubset(set(Rec)):
+                        print('True')
+                    else:
+                        print('False')
+                    print("Read articles NO-stochastic", indecesOfChosenItemsW)
+                    if set(indecesOfChosenItemsW).issubset(set(Rec)):
+                        print('True')
+                    else:
+                        print('False')
 
+                    if not stochastic:
+                        indecesOfChosenItems = indecesOfChosenItemsW
                     # Add item purchase to histories
                     self.SalesHistory[user, indecesOfChosenItems] += 1
 
@@ -848,7 +866,7 @@ if __name__ == '__main__':
     b                      = 2
     c                      = 2
     num_particles          = 12
-    num_generations        = 300
+    num_generations        = 10
     pi                     = [
                             1.8,
                             1.2,
@@ -869,6 +887,6 @@ if __name__ == '__main__':
     sim = Simulation()
     sim.setSettings()
     sim.initWithSettings()
-    sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger)
+    sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger, stochastic=True)
 
     # todo make an exit condition
