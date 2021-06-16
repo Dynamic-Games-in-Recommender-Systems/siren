@@ -75,11 +75,15 @@ class Reexposition_game:
         a_decay                 = ( a*5/6 )/(number_of_generations)
         print(exposure_set)
 
+        max_values_per_user     = []
+        for user in range(len(user_recommendations)):
+            max_values_per_user.append(len(user_recommendations[user]))
+
         for i in range(n_particles):
             print(f"particle {i}")
-            particle = np.random.randint(number_of_recommendations, size = len(exposure_set) * len(user_recommendations))
+            particle = np.random.randint(min(max_values_per_user), size = len(exposure_set) * len(user_recommendations))
             #print(particle)
-            self.legalize_position(particle, len(exposure_set), number_of_recommendations)
+            self.legalize_position(particle, len(exposure_set), max_values_per_user)
             best_neighbour = particle
             best_score     = 0
             initial_velocity = np.random.randint(2, size = len(exposure_set) * len(user_recommendations)) - 1
@@ -97,13 +101,15 @@ class Reexposition_game:
                 v_inert = a * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
-                new_position = particles[p] + (v_inert + v_previous_best + v_neighbouring_best)
-                velocities[p] = new_position - particles[p]
-                # TODO might also update the velocity to achieve better results
+                new_velocity = (v_inert + v_previous_best + v_neighbouring_best)
+                new_position = particles[p] + new_velocity
+                new_position = new_position.flatten()
+                velocities[p] = new_velocity
+
 
                 #new_position = np.ndarray.round(new_position)
                 # check for illegal positions
-                particles[p] = self.legalize_position(new_position, len(exposure_set), number_of_recommendations)
+                particles[p] = self.legalize_position(new_position, len(exposure_set), max_values_per_user).flatten()
 
                 # formulate pi from particle position:
                 exposure_parameters = []
@@ -161,15 +167,25 @@ class Reexposition_game:
 
         return exposure_parameters
 
-    def legalize_position(self, particle, parameters_per_user, max_value):
-        particle = np.reshape(particle, (260))
+    def legalize_position(self, particle, parameters_per_user, max_values):
+        # if len(particle.shape) > 1:
+        #     particle = np.reshape(particle, (particle.shape[1]))
+
         for i in range(len(particle)):
+            left = False
+            if random.random() > 0.5:
+                left = True
+
+            while particle[i] <= -0.5:
+                left = False
+                particle[i] += 2
+            while particle[i] >= max_values[i%parameters_per_user] - 0.5:
+                left = True
+                particle[i] -= 2
+
             if i%parameters_per_user == 0:
                 continue
             else:
-                left = False
-                if random.random() > 0.5:
-                    left = True
 
                 illegal = self.check_illegality(parameters_per_user, particle, i)
 
@@ -178,12 +194,7 @@ class Reexposition_game:
                         particle[i] -= 1
                     else:
                         particle[i] += 1
-                    if particle[i] <= -0.5:
-                        left = False
-                        particle[i] += 2
-                    if particle[i] >= max_value + 0.5:
-                        left = True
-                        particle[i] -= 2
+
                     illegal = self.check_illegality(parameters_per_user, particle, i)
         return particle
 
