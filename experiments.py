@@ -95,13 +95,12 @@ def experiment_pi():
         sim.initWithSettings()
         sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=True)
         met_arr = met_arr.append(sim.met_out, ignore_index=True)
-        comp_arr['Pi ' + str(ii + 1)] = sim.met_out['EPC']
         day_arr = np.append(day_arr, np.arange(1, 10))
         exp_arr = exp_arr + ([ii + 1] * 9)
         for i in range(9):
             arr.append(sim.met_out[i]['EPC'])
         print(arr)
-        comp_arr['Base'] = arr
+        comp_arr['Pi' + str(ii + 1)] = arr
         print(comp_arr)
 
     met_arr.insert(0, 'day', day_arr)
