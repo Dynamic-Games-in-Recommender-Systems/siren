@@ -15,7 +15,7 @@ class Reexposition_game:
         new_recommendations     = {}
         exposures               = []
         exposure_factors        = pi
-
+        new = {}
         for user in range(len(users.activeUserIndeces)):
             exposure = np.zeros(len(recommendation_strenghs[user]))
             for exposure_factor in range(len(exposure_factors)):
@@ -30,16 +30,22 @@ class Reexposition_game:
 
         # normalize?
 
+        #print("update_probabilities", updated_probabilities)
 
         # sort and return best reommendations
         for i in range(len(recommendations)):
-            sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
-            sorted_user_recommendations = [recommendations[i][k] for k in sorted_y_idx_list ]
+            zipped_lists = zip(updated_probabilities[i], recommendations[i])
+            sorted_zipped_lists = sorted(zipped_lists)
+            sorted_user_recommendations = [element for _, element in sorted_zipped_lists]
+            #sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+            #sorted_user_recommendations = [recommendations[i][k] for k in sorted_y_idx_list ]
             #sorted_user_recommendations = [x for y,x in sorted(zip(updated_probabilities[i],recommendations[i]))]
 
             filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
 
             new_recommendations[i] = filtered_user_recommendations
+
+
 
             '''Opitmization:
                 PSO/other evolutionary algorithm ?
@@ -50,6 +56,11 @@ class Reexposition_game:
                                            - the same goes for articles that are highly relevant to the user (i.e. are recommender system output is very high)
                                            -> search space might be reduced if we search more intensively along some kind of pareto line reconciling these three variables.
             '''
+        for i in range(len(recommendations)):
+            new[i] = recommendations[i][0:self.number_of_recommendations]
+
+        if new_recommendations==new:
+            print("wrong")
         return new_recommendations
 
     def optimize_exposure(self, items, users, sales_history, controlId, exposure_set, user_recommendations, n_particles,
@@ -74,7 +85,7 @@ class Reexposition_game:
             max_values_per_user.append(len(user_recommendations[user]))
 
         for i in range(n_particles):
-            print(f"particle {i}")
+            #print(f"particle {i}")
             particle = np.random.randint(min(max_values_per_user), size = len(exposure_set) * len(user_recommendations))
             #print(particle)
             self.legalize_position(particle, len(exposure_set), max_values_per_user)
@@ -118,20 +129,28 @@ class Reexposition_game:
                 # update recommendation strengths based on particle position
                 updated_probabilities = self.update_probabilities(users.activeUserIndeces, exposure_parameters, recommendation_strengths) #TODO: at this point updated probabilities is not sorted
                 new_recommendations = {}
+                #print(updated_probabilities)
 
                 #print("OLD:", user_recommendations)
 
                 for i in range(len(user_recommendations)):
 
-                    sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
-                    sorted_user_recommendations = [user_recommendations[i][k] for k in sorted_y_idx_list ]
+                    #sorted_y_idx_list = sorted(range(len(updated_probabilities[i])),key=lambda x:updated_probabilities[i][x])
+                    #sorted_user_recommendations = [user_recommendations[i][k] for k in sorted_y_idx_list ]
                     #sorted_user_recommendations = [x for y, x in
                                                   # sorted(zip(updated_probabilities[i], user_recommendations[i]))]
 
+                    #filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
+
+                    #new_recommendations[i] = filtered_user_recommendations
+                    zipped_lists = zip(updated_probabilities[i], user_recommendations[i])
+                    sorted_zipped_lists = sorted(zipped_lists)
+                    sorted_user_recommendations = [element for _, element in sorted_zipped_lists]
                     filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
-
                     new_recommendations[i] = filtered_user_recommendations
-
+                    #print("old", user_recommendations[i])
+                    #print("sorted", sorted_user_recommendations)
+                    #print("new", new_recommendations[i])
                 #print("NEW:", new_recommendations)
 
                 # evaluate position
@@ -143,8 +162,11 @@ class Reexposition_game:
                 if value > best_score_per_particle[p]:
                     best_score_per_particle[p] = value
                     best_for_particles[p] = particles[p]
+
                     if value > best_score:
                         best_score = value
+                        print(value)
+                        #print(exposure_parameters[0])
                         best_neighbour = particles[p] # TODO also make this the best neighbour per round!
 
             a = a - a_decay
@@ -158,7 +180,7 @@ class Reexposition_game:
                 user_exposure[round(best_neighbour[user_id*len(exposure_set) + exposure_index])] = exposure_set[exposure_index]
 
             exposure_parameters.append(user_exposure)
-
+        print(exposure_parameters[0])
         return exposure_parameters
 
     def legalize_position(self, particle, parameters_per_user, max_values):
