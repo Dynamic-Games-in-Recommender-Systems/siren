@@ -26,13 +26,6 @@ class Reexposition_game:
                                                     recommendations, num_particles, self.number_of_recommendations,
                                                     num_generations, recommendation_strenghs, a, b, c)
 
-        # apply exposure
-        #temp = [list(recommendation_strenghs[key]) for key in recommendation_strenghs]
-        #old_probabilities = np.array(temp)
-
-
-        #updates_probabilities = np.dot(exposure.T, old_probabilities)
-
         updated_probabilities = self.update_probabilities(users.activeUserIndeces, optimized_exposure, recommendation_strenghs)
 
         # normalize?
@@ -69,7 +62,7 @@ class Reexposition_game:
         best_score_per_particle = []
         velocities              = []
         best_neighbour          = None
-        best_neighbour_score    = 0
+        best_score              = 0
         a                       = a
         b                       = b
         c                       = c
@@ -86,7 +79,6 @@ class Reexposition_game:
             #print(particle)
             self.legalize_position(particle, len(exposure_set), max_values_per_user)
             best_neighbour = particle
-            best_score     = 0
             initial_velocity = np.random.randint(2, size = len(exposure_set) * len(user_recommendations)) - 1
             velocities             .append(initial_velocity)
             particles              .append(particle)
@@ -104,10 +96,10 @@ class Reexposition_game:
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
                 new_velocity = (v_inert + v_previous_best + v_neighbouring_best)
+                new_velocity = self.limit_velocity(new_velocity.flatten())
                 new_position = particles[p] + new_velocity
                 new_position = new_position.flatten()
                 velocities[p] = new_velocity
-
 
                 #new_position = np.ndarray.round(new_position)
                 # check for illegal positions
@@ -170,10 +162,9 @@ class Reexposition_game:
         return exposure_parameters
 
     def legalize_position(self, particle, parameters_per_user, max_values):
-        # if len(particle.shape) > 1:
-        #     particle = np.reshape(particle, (particle.shape[1]))
-
         for i in range(len(particle)):
+            max_value = max_values[int(math.floor(i/parameters_per_user))] - 0.5
+
             left = False
             if random.random() > 0.5:
                 left = True
@@ -181,14 +172,13 @@ class Reexposition_game:
             while particle[i] <= -0.5:
                 left = False
                 particle[i] += 2
-            while particle[i] >= max_values[int(math.floor(i/parameters_per_user))] - 0.5:
+            while particle[i] >= max_value:
                 left = True
                 particle[i] -= 2
 
             if i%parameters_per_user == 0:
                 continue
             else:
-
                 illegal = self.check_illegality(parameters_per_user, particle, i)
 
                 while illegal:
@@ -199,7 +189,7 @@ class Reexposition_game:
                     while particle[i] <= -0.5:
                         left = False
                         particle[i] += 2
-                    while particle[i] >= max_values[int(math.floor(i/parameters_per_user))] - 0.5:
+                    while particle[i] >= max_value:
                         left = True
                         particle[i] -= 2
 
@@ -213,6 +203,14 @@ class Reexposition_game:
                 is_illegal = True
                 return is_illegal
         return is_illegal
+
+    def limit_velocity(self, velocity):
+        for i in range(len(velocity)):
+            if velocity[i] > 2:
+                velocity[i] = 2
+            elif velocity[i] < -2:
+                velocity[i] = -2
+        return velocity
 
     def evaluate(self, users, items, sales_history, user_recommendations, controlId):
         ### from the metrics
@@ -250,12 +248,6 @@ class Reexposition_game:
 
         metric = metrics.metrics(sales_history_old, user_recommendations, items.ItemsFeatures, items.ItemsDistances, sales_history_new)
 
-        # print("PSO - EPC", metric["EPC"])
-        # print("evaluate-old",sales_history)
-        # print("evaluate-new",sales_history_new)
-        # print("evaluate-diff",sales_history_new-sales_history_old)
-
-        # print("EPC", metric["EPC"])
         return metric["EPC"]
 
 
