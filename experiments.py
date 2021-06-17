@@ -60,26 +60,54 @@ def experiment_c():
     pass
 
 def experiment_pi():
-    pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05],
+    # pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05],
+    #           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    #           [2, 1.1, 1.1, 1.1, 1.1, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01]]
+    pi_arr = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [2, 1.1, 1.1, 1.1, 1.1, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01]]
+              [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]]
     print("START EXPERIMENT")
     met_arr = pd.DataFrame()
+    comp_arr = pd.DataFrame()
     day_arr = np.array([])
     exp_arr = []
+    arr = []
+    first_run = True
+
     for ii, pi in enumerate(pi_arr):
         print("Testing pi = ", pi)
+
+        # Run base case
+        if first_run:
+            first_run = False
+            sim = Simulation()
+            sim.setSettings()
+            sim.initWithSettings()
+            sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=False)
+            for i in range(9):
+                arr.append(sim.met_out[i]['EPC'])
+            print(arr)
+            comp_arr['Base'] = arr
+
+        arr = []
         sim = Simulation()
         sim.setSettings()
         sim.initWithSettings()
         sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=True)
         met_arr = met_arr.append(sim.met_out, ignore_index=True)
+        comp_arr['Pi ' + str(ii + 1)] = sim.met_out['EPC']
         day_arr = np.append(day_arr, np.arange(1, 10))
         exp_arr = exp_arr + ([ii + 1] * 9)
+        for i in range(9):
+            arr.append(sim.met_out[i]['EPC'])
+        print(arr)
+        comp_arr['Base'] = arr
+        print(comp_arr)
 
     met_arr.insert(0, 'day', day_arr)
-    met_arr.insert(0, 'exp num', exp_arr)
+    met_arr.insert(0, 'exp', exp_arr)
     print(met_arr)
+    print(comp_arr)
 
 def experiment_particles():
     pass

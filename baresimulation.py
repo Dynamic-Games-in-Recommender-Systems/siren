@@ -650,17 +650,17 @@ class Simulation():
                                                                                       self.D[user,:],
                                                                                       self.U.sessionSize(),
                                                                                       control = self.algorithm=="Control")
-                    print("Recommended articles ", Rec)
-                    print("Read articles stochastic", indecesOfChosenItems)
-                    if set(indecesOfChosenItems).issubset(set(Rec)):
-                        print('True')
-                    else:
-                        print('False')
-                    print("Read articles NO-stochastic", indecesOfChosenItemsW)
-                    if set(indecesOfChosenItemsW).issubset(set(Rec)):
-                        print('True')
-                    else:
-                        print('False')
+                    # print("Recommended articles ", Rec)
+                    # print("Read articles stochastic", indecesOfChosenItems)
+                    # if set(indecesOfChosenItems).issubset(set(Rec)):
+                    #     print('True')
+                    # else:
+                    #     print('False')
+                    # print("Read articles NO-stochastic", indecesOfChosenItemsW)
+                    # if set(indecesOfChosenItemsW).issubset(set(Rec)):
+                    #     print('True')
+                    # else:
+                    #     print('False')
 
                     if not stochastic:
                         indecesOfChosenItems = indecesOfChosenItemsW
