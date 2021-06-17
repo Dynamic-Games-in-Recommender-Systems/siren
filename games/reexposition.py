@@ -99,6 +99,7 @@ class Reexposition_game:
             print(f"Generation {g}/{number_of_generations}")
             for p in range(len(particles)):
                 # define movement
+                random.seed()
                 v_inert = a * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
@@ -229,7 +230,7 @@ class Reexposition_game:
             prior_recommendations[Rec] = 1
             awareness[user, Rec] = 1
 
-                # If recommended but previously purchased, minimize the awareness
+            # If recommended but previously purchased, minimize the awareness
             awareness[user, np.where(sales_history_old[user,Rec]>0)[0] ] = 0
 
         for user in users.activeUserIndeces:
