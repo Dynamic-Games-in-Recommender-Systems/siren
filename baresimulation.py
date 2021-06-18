@@ -566,7 +566,7 @@ class Simulation():
             iterationRange (list): The iteration range for the current simulation
 
         """
-        time_start = time.time()
+
         # game = Basic_game(self.settings["Number of recommended articles per day"])
         game = Reexposition_game(self.settings["Number of recommended articles per day"])
 
@@ -593,7 +593,7 @@ class Simulation():
             # block to be in line with what we want...
 
             for epoch_index, epoch in enumerate(self.iterationRange):
-
+                time_start = time.time()
                 SalesHistoryBefore = self.SalesHistory.copy()
 
                 #self.printj(self.algorithm+": Awareness...")
@@ -684,7 +684,7 @@ class Simulation():
                     met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
                     print('EPC best value', met['EPC'])
                     self.met_out.append(met)
-                    self.time.append(round(time.time() - time_start))
+                    self.time.append(round((time.time() - time_start), 4))
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
