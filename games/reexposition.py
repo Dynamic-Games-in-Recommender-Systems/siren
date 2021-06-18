@@ -7,6 +7,7 @@ import math
 class Reexposition_game:
     def __init__(self, number_of_recommendations):
         self.number_of_recommendations = number_of_recommendations
+        self.np_rng = np.random.default_rng()
         pass
 
     def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId,
@@ -81,11 +82,11 @@ class Reexposition_game:
 
         for i in range(n_particles):
             #print(f"particle {i}")
-            particle = np.random.randint(min(max_values_per_user), size = len(exposure_set) * len(user_recommendations))
+            particle = self.np_rng.integers(min(max_values_per_user), size = len(exposure_set) * len(user_recommendations))
             #print(particle)
             self.legalize_position(particle, len(exposure_set), max_values_per_user)
             best_neighbour = particle
-            initial_velocity = np.random.randint(2, size = len(exposure_set) * len(user_recommendations)) - 1
+            initial_velocity = self.np_rng.integers(2, size = len(exposure_set) * len(user_recommendations)) - 1
             velocities             .append(initial_velocity)
             particles              .append(particle)
             best_for_particles     .append(particle)
@@ -97,10 +98,9 @@ class Reexposition_game:
             print(f"Generation {g}/{number_of_generations}")
             for p in range(len(particles)):
                 # define movement
-                random.seed()
                 v_inert = a * velocities[p]
-                v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
-                v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
+                v_previous_best = b * (best_for_particles[p] - particles[p]) * self.np_rng.random()
+                v_neighbouring_best = c * (best_neighbour - [particles[p]]) * self.np_rng.random()
                 new_velocity = (v_inert + v_previous_best + v_neighbouring_best)
                 new_velocity = self.limit_velocity(new_velocity.flatten())
                 new_position = particles[p] + new_velocity
@@ -172,7 +172,7 @@ class Reexposition_game:
             max_value = max_values[int(math.floor(i/parameters_per_user))] - 0.5
 
             left = False
-            if random.random() > 0.5:
+            if self.np_rng.random() > 0.5:
                 left = True
 
             while particle[i] <= -0.5:
