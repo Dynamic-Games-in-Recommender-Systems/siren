@@ -521,7 +521,6 @@ class Simulation():
     def __init__(self):
         self.settings = {}
         self.met_out = []
-        self.time = []
 
     #TODO change(set) the settings
     def setSettings(self):
@@ -566,7 +565,6 @@ class Simulation():
             iterationRange (list): The iteration range for the current simulation
 
         """
-        time_start = time.time()
 
         # game = Basic_game(self.settings["Number of recommended articles per day"])
         game = Reexposition_game(self.settings["Number of recommended articles per day"])
@@ -685,7 +683,6 @@ class Simulation():
                     met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
                     print('EPC best value', met['EPC'])
                     self.met_out.append(met)
-                    self.time.append(round(time.time() - time_start))
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
