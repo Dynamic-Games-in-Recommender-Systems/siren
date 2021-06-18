@@ -524,7 +524,7 @@ class Simulation():
         self.time = []
 
     #TODO change(set) the settings
-    def setSettings(self):
+    def setSettings(self, users_number):
         # self.settings = {"Number of active users per day": self.spinBoxUsers.value(),       # Population
         #                  "Days" : self.spinBoxDays.value(),                                 # Number of iterations
         #                  "seed": int(1),
@@ -538,7 +538,7 @@ class Simulation():
         #                  "Overall topic weights": [float(i.value()/100) for i in [self.sliderEnt,  self.sliderBus, self.sliderPol, self.sliderSpo, self.sliderTec]],
         #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
 
-        self.settings = {"Number of active users per day": 20,           # Population
+        self.settings = {"Number of active users per day": users_number,           # Population
                          "Days" : 9,                                    # Number of iterations
                          "seed": int(1),                                #
                          "Recommender salience": 5,
