@@ -521,6 +521,7 @@ class Simulation():
     def __init__(self):
         self.settings = {}
         self.met_out = []
+        self.time = []
 
     #TODO change(set) the settings
     def setSettings(self):
@@ -565,7 +566,7 @@ class Simulation():
             iterationRange (list): The iteration range for the current simulation
 
         """
-
+        time_start = time.time()
         # game = Basic_game(self.settings["Number of recommended articles per day"])
         game = Reexposition_game(self.settings["Number of recommended articles per day"])
 
@@ -595,13 +596,13 @@ class Simulation():
 
                 SalesHistoryBefore = self.SalesHistory.copy()
 
-                self.printj(self.algorithm+": Awareness...")
+                #self.printj(self.algorithm+": Awareness...")
                 self.awarenessModule(epoch)
                 InitialAwareness = self.U.Awareness.copy()
 
                 # Recommendation module
                 if self.algorithm is not "Control":
-                    self.printj(self.algorithm+": Recommendations...")
+                    #self.printj(self.algorithm+": Recommendations...")
 
                     # Call the recommendation object
                     self.Rec.setData(self.U, self.I, self.algorithm, self.SalesHistory)
@@ -635,7 +636,7 @@ class Simulation():
                             self.U.Awareness[user, np.where(self.SalesHistory[user,Rec]>0)[0] ] = 0
 
                 # Choice
-                self.printj(self.algorithm+": Choice...")
+                #self.printj(self.algorithm+": Choice...")
                 for user in self.U.activeUserIndeces:
                     Rec=np.array([-1])
 
@@ -672,21 +673,22 @@ class Simulation():
                         self.U.computeNewPositionOfUser(user, self.I.Items[indecesOfChosenItems])
 
                 # Temporal adaptations
-                self.printj(self.algorithm+": Temporal adaptations...")
+                #self.printj(self.algorithm+": Temporal adaptations...")
                 self.temporalAdaptationsModule(epoch)
 
                 # Compute diversity and other metrics. For this version, we compute
                 # only two diversity metrics (EPC, EPD) and the topic distribution
                 if self.algorithm is not "Control":
 
-                    self.printj(self.algorithm+": Diversity metrics...")
+                    #self.printj(self.algorithm+": Diversity metrics...")
                     met = metrics.metrics(SalesHistoryBefore, recommendations, self.I.ItemsFeatures, self.I.ItemsDistances, self.SalesHistory)
                     print('EPC best value', met['EPC'])
                     self.met_out.append(met)
+                    self.time.append(round(time.time() - time_start))
                     #for key in met.keys():
                     #    self.data["Diversity"][self.algorithm][key].append(met[key])
 
-                    self.printj(self.algorithm+": Distribution...")
+                    #self.printj(self.algorithm+": Distribution...")
                     for i in range(len(self.I.topics)):
                         indeces = np.where(self.I.ItemsClass==i)[0]
                         A = self.SalesHistory[:,indeces] - ControlHistory[:,indeces]
@@ -695,7 +697,7 @@ class Simulation():
                 # Add more metric computations here...
 
                 # Save results
-                self.printj(self.algorithm+": Exporting iteration data...")
+                #self.printj(self.algorithm+": Exporting iteration data...")
                 self.exportAnalysisDataAfterIteration() #TODO Important piece while here, after each iteration the data metrics are exported
 
 
@@ -738,7 +740,7 @@ class Simulation():
 
 
         # Simulation inits taken from the interface
-        self.printj("Initialize simulation class...")
+        #self.printj("Initialize simulation class...")
         #sim.gallery = gallery
         self.outfolder = self.settings["outfolder"]
         self.seed = int(self.settings["seed"])
@@ -751,7 +753,7 @@ class Simulation():
         # recommendation period, as such the total amount of iterations is doubled.
         self.totalNumberOfIterations = int(self.settings["Days"])*2
 
-        self.printj("Initialize users/items classes...")
+        #self.printj("Initialize users/items classes...")
         U = Users()
         I = Items()
 
@@ -769,14 +771,14 @@ class Simulation():
         I.generatePopulation(self.totalNumberOfIterations) #TODO number of iterations of simulation
         U.generatePopulation()
 
-        self.printj("Create simulation instance...")
+        #self.printj("Create simulation instance...")
         self.U = copy.deepcopy(U)
         self.I = copy.deepcopy(I)
 
         self.D =  euclideanDistance(self.U.Users, self.I.Items)
         self.SalesHistory = np.zeros([self.U.totalNumberOfUsers,self.I.totalNumberOfItems])
 
-        self.printj("Create recommendations instance...")
+        #self.printj("Create recommendations instance...")
         self.Rec = Recommendations()
         self.Rec.U = copy.deepcopy(U)
         self.Rec.I = copy.deepcopy(U)
@@ -801,7 +803,7 @@ class Simulation():
 
     def printj(self, text):
         """template method to replace the printing from the siren simulation until a better solution is found"""
-        print(text)
+        #print(text)
 
     def awarenessModule(self, epoch):
         """This function computes the awareness of each user.

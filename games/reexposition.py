@@ -39,6 +39,7 @@ class Reexposition_game:
             sorted_user_recommendations = [item[0] for item in sorted_zipped_lists]
             filtered_user_recommendations = sorted_user_recommendations[0:self.number_of_recommendations]
             new_recommendations[i] = filtered_user_recommendations
+            print(new_recommendations)
 
 
             '''Opitmization:
@@ -72,7 +73,7 @@ class Reexposition_game:
         b                       = b
         c                       = c
         a_decay                 = ( a*5/6 )/(number_of_generations)
-        print(exposure_set)
+        #print(exposure_set)
 
         max_values_per_user     = []
         for user in range(len(user_recommendations)):
