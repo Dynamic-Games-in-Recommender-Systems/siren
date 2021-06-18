@@ -54,7 +54,6 @@ else:
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
-rng = random.Random(1)
 np_rng = np.random.default_rng(1)
 
 def cdf(weights):
@@ -87,7 +86,7 @@ def selectClassFromDistribution(population, weights):
 
     assert len(population) == len(weights)
     cdf_vals = cdf(weights)
-    x = rng.random()
+    x = random.random()
     idx = bisect.bisect(cdf_vals, x)
     return population[idx]
 
@@ -163,11 +162,8 @@ class Users(object):
 
         """
 
-        # random.seed(self.seed)
-        # np_rng.seed(self.seed)
-        rng = random.Random(self.seed)
-        np_rng = np.random.default_rng(self.seed)
-
+        random.seed(self.seed)
+        np_rng = np.random.default_rng(seed=self.seed)
         # Position on the attribute space. Uniform, bounded by 1-radius circle
         self.Users = np_rng.uniform(-1,1,(self.totalNumberOfUsers,2))
         for i, user in enumerate(self.Users):
@@ -203,7 +199,7 @@ class Users(object):
         """
 
         self.activeUserIndeces = np.arange(self.totalNumberOfUsers).tolist()
-        random.shuffle(self.activeUserIndeces)
+        np_rng.shuffle(self.activeUserIndeces)
         self.activeUserIndeces = self.activeUserIndeces[:int(len(self.activeUserIndeces)*self.percentageOfActiveUsersPI)]
         self.nonActiveUserIndeces = [ i  for i in np.arange(self.totalNumberOfUsers) if i not in self.activeUserIndeces]
 
@@ -225,7 +221,7 @@ class Users(object):
             W[a,activeItemIndeces] = self.Lambda*(-self.thetaDot*np.log(1-ItemProminence[activeItemIndeces])) + (1-self.Lambda)*np.exp(-(np.power(Dij[a,activeItemIndeces],2))/self.theta)
             W2[a,activeItemIndeces] = self.Lambda*(-self.thetaDot*np.log(1-ItemProminence[activeItemIndeces]))
             W3[a,activeItemIndeces] = (1-self.Lambda)*np.exp(-(np.power(Dij[a,activeItemIndeces],2))/self.theta)
-        R = np_rng.rand(W.shape[0],W.shape[1])
+        R = np_rng.random((W.shape[0],W.shape[1]))
         W = R<W
         self.Awareness, self.AwarenessOnlyPopular, self.AwarenessProximity =  W, W2, W3
 
@@ -253,7 +249,7 @@ class Users(object):
                 V[r] = Similarity[r] + self.delta*np.power(self.beta,k)
 
         # Introduce the stochastic component
-        E = -np.log(-np.log([rng.random() for v in range(len(V))]))
+        E = -np.log(-np.log([random.random() for v in range(len(V))]))
         U = V + E
         sel = np.where(w==1)[0]
 
@@ -279,7 +275,7 @@ class Users(object):
             B = np.array(self.Users[user])
             P = np.array(itemPosition)
             BP = P - B
-            x,y = B + self.m*(rng.random()<p)*BP
+            x,y = B + self.m*(random.random()<p)*BP
             self.Users[user] = [x,y]
         self.X[user].append(x)
         self.Y[user].append(y)
@@ -323,10 +319,8 @@ class Items(object):
 
         """
 
-        # random.seed(self.seed)
-        # np.random.seed(self.seed)
-        rng = random.Random(self.seed)
-        np_rng = np.random.default_rng(self.seed)
+        random.seed(self.seed)
+        np_rng = np.random.default_rng(seed=self.seed)
 
         # Compute number of total items in the simulation
         self.totalNumberOfItems = totalNumberOfIterations*self.numberOfNewItemsPI
@@ -334,7 +328,7 @@ class Items(object):
 
         # Apply GMM on items/articles from the BBC data
         R, S = [5,1,6,7], [5,2,28,28]
-        r = int(rng.random()*4)
+        r = int(random.random()*4)
         (X,labels,topicClasses) = pickle.load(open('BBC data/t-SNE-projection'+str(R[r])+'.pkl','rb'))
         gmm = GaussianMixture(n_components=5, random_state=S[r]).fit(X)
 
@@ -500,7 +494,7 @@ class Recommendations(object):
 
         """
 
-        command = "mono MyMediaLite/item_recommendation.exe --training-file=" + self.outfolder + "/positive_only_feedback.csv --item-attributes=" + self.outfolder + "/items_attributes.csv --recommender="+self.algorithm+" --predict-items-number="+str(number_of_recommendations)+" --prediction-file=" + self.outfolder + "/output.txt --user-attributes=" + self.outfolder + "/users_attributes.csv" # --random-seed="+str(int(self.seed*rng.random()))
+        command = "mono MyMediaLite/item_recommendation.exe --training-file=" + self.outfolder + "/positive_only_feedback.csv --item-attributes=" + self.outfolder + "/items_attributes.csv --recommender="+self.algorithm+" --predict-items-number="+str(number_of_recommendations)+" --prediction-file=" + self.outfolder + "/output.txt --user-attributes=" + self.outfolder + "/users_attributes.csv" # --random-seed="+str(int(self.seed*random.random()))
         os.system(command)
 
         # Parse output
