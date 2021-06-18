@@ -12,6 +12,9 @@ class Reexposition_game:
     def play(self, recommendations, recommendation_strenghs, items, users, SalesHistory, controlId,
              a, b, c, pi, num_particles, num_generations):
         # print("OLD RECOMMENDATIONS",recommendation_strenghs)
+        random.seed()
+        np.random.seed()
+
         new_recommendations     = {}
         exposures               = []
         exposure_factors        = pi
@@ -97,7 +100,6 @@ class Reexposition_game:
             print(f"Generation {g}/{number_of_generations}")
             for p in range(len(particles)):
                 # define movement
-                random.seed()
                 v_inert = a * velocities[p]
                 v_previous_best = b * (best_for_particles[p] - particles[p]) * random.random()
                 v_neighbouring_best = c * (best_neighbour - [particles[p]]) * random.random()
