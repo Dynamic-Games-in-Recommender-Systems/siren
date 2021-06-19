@@ -539,7 +539,7 @@ class Simulation():
         #                  "Overall topic prominence": [float(i.value()/10) for i in [self.sliderPromEnt,  self.sliderPromBus, self.sliderPromPol, self.sliderPromSpo, self.sliderPromTec]]}
 
         self.settings = {"Number of active users per day": 20,           # Population
-                         "Days" : 9,                                    # Number of iterations
+                         "Days" : 10,                                    # Number of iterations
                          "seed": int(1),                                #
                          "Recommender salience": 5,
                          "Number of published articles per day": 100,

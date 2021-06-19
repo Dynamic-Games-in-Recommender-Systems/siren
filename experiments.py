@@ -8,7 +8,7 @@ a = 2
 b = 2
 c = 2
 num_particles = 8
-num_generations = 20
+num_generations = 5
 # pi = [
 #     1.8,
 #     1.2,
@@ -61,10 +61,10 @@ def experiment_c():
     pass
 
 def experiment_pi():
-    # pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05],
-    #           [2, 1.1, 1.1, 1.1, 1.1, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01],
-    #           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
-    pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05]]
+    pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05],
+              [2, 1.1, 1.1, 1.1, 1.1, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01],
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+    # pi_arr = [[1.8, 1.2, 1.2, 1.2, 1.2, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05]]
     # pi_arr = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     #           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     #           [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]]
@@ -88,10 +88,9 @@ def experiment_pi():
 
             met_arr = met_arr.append(sim.met_out, ignore_index=True)
             time_arr = time_arr + sim.time
-            day_arr = np.append(day_arr, np.arange(1, len(time_arr) + 1))
-            exp_arr = exp_arr + (['Base'] * len(time_arr))
+            day_arr = np.append(day_arr, np.arange(1, 11))
+            exp_arr = exp_arr + (['Base'] * 10)
 
-        days = len(time_arr)
 
         sim = Simulation()
         sim.setSettings()
@@ -100,8 +99,8 @@ def experiment_pi():
 
         met_arr = met_arr.append(sim.met_out, ignore_index=True)
         time_arr = time_arr + sim.time
-        day_arr = np.append(day_arr, np.arange(1, days + 1)) #TODO this is hardcoded
-        exp_arr = exp_arr + (['Pi' + str(ii + 1)] * days)
+        day_arr = np.append(day_arr, np.arange(1, 11))
+        exp_arr = exp_arr + (['Pi' + str(ii + 1)] * 10)
 
     #
     # print(len(time_arr))
