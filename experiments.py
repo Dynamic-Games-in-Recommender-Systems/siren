@@ -33,7 +33,7 @@ def experiment_pi():
     exp_arr = []
     time_arr = []
 
-    for _ in tqdm(range(10)):
+    for _ in tqdm(range(5)):
         first_run = True
 
         # Run base case
@@ -42,23 +42,23 @@ def experiment_pi():
             sim = Simulation()
             sim.setSettings()
             sim.initWithSettings()
-            sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=False)
+            sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=False, stochastic=False)
 
             met_arr = met_arr.append(sim.met_out, ignore_index=True)
             time_arr = time_arr + sim.time
-            day_arr = np.append(day_arr, np.arange(1, 21))
-            exp_arr = exp_arr + (['Base'] * 20)
+            day_arr = np.append(day_arr, np.arange(1, 11))
+            exp_arr = exp_arr + (['Base'] * 10)
 
 
         sim = Simulation()
         sim.setSettings()
         sim.initWithSettings()
-        sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=True)
+        sim.runSimulation(a, b, c, pi, num_particles, num_generations, game_trigger=True, stochastic=False)
 
         met_arr = met_arr.append(sim.met_out, ignore_index=True)
         time_arr = time_arr + sim.time
-        day_arr = np.append(day_arr, np.arange(1, 21))
-        exp_arr = exp_arr + (['Opt'] * 20)
+        day_arr = np.append(day_arr, np.arange(1, 11))
+        exp_arr = exp_arr + (['Opt'] * 10)
 
     #
     # print(len(time_arr))
@@ -67,8 +67,7 @@ def experiment_pi():
     met_arr['Day'] = day_arr
     met_arr['Exp'] = exp_arr
 
-    met_arr.to_csv('Results\pi-experiment-' + str(time.time())+ ".csv")
-    met_arr.to_excel('Results\pi-experiment-' + str(time.time())+ '.xlsx')
+    met_arr.to_csv('Results\opt-experiment-' + str(time.time()) + ".csv")
     print(met_arr)
 
 
